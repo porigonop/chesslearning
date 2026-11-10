@@ -1,0 +1,1781 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body>
+<title>Opening Drill</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: sticky-free single column on phones; board left + working panel right from 900px. Cool ink-blue palette, board in blue-grey, amber for last move. */
+:root{
+  --bg:#eef0f5; --panel:#ffffff; --panel2:#f5f6fa; --ink:#18202f; --muted:#5d6779; --line:#d9dde6;
+  --accent:#2a56c6; --accent-ink:#ffffff; --good:#1a7f55; --bad:#c23b32; --warn:#a96a0c; --nov:#6b4fc4;
+  --sq-l:#e9ecf3; --sq-d:#7f95b8; --last:rgba(244,196,48,.55); --hintc:rgba(42,86,198,.5); --selc:rgba(42,86,198,.35); --badc:rgba(194,59,50,.6); --dot:rgba(24,32,47,.28);
+  --pw:#fbfbfd; --pb:#1b2233; --pline:#1b2233;
+  --font-display:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;
+  --font-body:'IBM Plex Sans','Segoe UI',system-ui,-apple-system,sans-serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+  --font-piece:'Noto Sans Symbols 2','Segoe UI Symbol','Apple Symbols','DejaVu Sans',sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#10131a; --panel:#181d27; --panel2:#1f2532; --ink:#e7ebf3; --muted:#9aa6ba; --line:#2c3547;
+  --accent:#7fa2ff; --accent-ink:#0d1220; --good:#4cc796; --bad:#ff7b71; --warn:#e8b04a; --nov:#b3a0ff;
+  --sq-l:#b4bdd0; --sq-d:#5a6e91; --last:rgba(244,196,48,.5); --hintc:rgba(127,162,255,.6); --selc:rgba(127,162,255,.45); --badc:rgba(255,123,113,.65); --dot:rgba(13,18,32,.35);
+  --pw:#fbfbfd; --pb:#161c2b; --pline:#0d1220; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#10131a; --panel:#181d27; --panel2:#1f2532; --ink:#e7ebf3; --muted:#9aa6ba; --line:#2c3547;
+  --accent:#7fa2ff; --accent-ink:#0d1220; --good:#4cc796; --bad:#ff7b71; --warn:#e8b04a; --nov:#b3a0ff;
+  --sq-l:#b4bdd0; --sq-d:#5a6e91; --last:rgba(244,196,48,.5); --hintc:rgba(127,162,255,.6); --selc:rgba(127,162,255,.45); --badc:rgba(255,123,113,.65); --dot:rgba(13,18,32,.35);
+  --pw:#fbfbfd; --pb:#161c2b; --pline:#0d1220; color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--font-body);margin:0}
+.app{max-width:1180px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--font-display);margin:0;text-wrap:balance;letter-spacing:-.01em}
+h2{font-size:1.35rem} h3{font-size:1rem;margin-bottom:8px}
+.muted{color:var(--muted)}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.top{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto}
+.brand h1{font-size:1.5rem;font-weight:700}
+.mark{width:28px;height:28px;border-radius:5px;display:grid;grid-template-columns:1fr 1fr;overflow:hidden;border:1px solid var(--line)}
+.mark i{display:block}.mark i:nth-child(1),.mark i:nth-child(4){background:var(--sq-d)}.mark i:nth-child(2),.mark i:nth-child(3){background:var(--sq-l)}
+.tabs{display:flex;gap:4px}
+.tab{background:none;border:0;border-bottom:3px solid transparent;padding:8px 12px;font:600 1rem var(--font-display);color:var(--muted);cursor:pointer}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.tab:hover{color:var(--ink)}
+
+.btn{background:var(--accent);color:var(--accent-ink);border:1px solid var(--accent);border-radius:6px;padding:8px 14px;font-weight:600;cursor:pointer}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.ghost:hover{border-color:var(--muted);filter:none}
+.btn.sm{padding:5px 10px;font-size:.88rem}
+.btn[disabled]{opacity:.5;cursor:default}
+.danger{color:var(--bad)!important}
+
+.banner{border:1px solid var(--warn);background:var(--panel);border-radius:8px;padding:10px 14px;margin-bottom:16px;color:var(--ink)}
+
+.split{display:grid;gap:24px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:900px){.split{grid-template-columns:minmax(0,580px) minmax(0,1fr);align-items:start}}
+.boardcol{min-width:0}
+.board{width:100%;max-width:580px;aspect-ratio:1;display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);border-radius:6px;overflow:hidden;container-type:inline-size;touch-action:none;user-select:none;-webkit-user-select:none;border:1px solid var(--line)}
+.sq{position:relative;display:grid;place-items:center;min-width:0;min-height:0}
+.sq.l{background-color:var(--sq-l);color:var(--sq-d)}
+.sq.d{background-color:var(--sq-d);color:var(--sq-l)}
+.sq::before{content:attr(data-r);position:absolute;top:2px;left:4px;font:500 .66rem var(--font-mono);pointer-events:none}
+.sq::after{content:attr(data-f);position:absolute;bottom:1px;right:4px;font:500 .66rem var(--font-mono);pointer-events:none}
+.sq.last{box-shadow:inset 0 0 0 100px var(--last)}
+.sq.hint{box-shadow:inset 0 0 0 100px var(--hintc)}
+.sq.sel{box-shadow:inset 0 0 0 100px var(--selc)}
+.sq.bad{box-shadow:inset 0 0 0 100px var(--badc)}
+.sq.dot{background-image:radial-gradient(circle,var(--dot) 17%,transparent 19%)}
+.sq.cap{background-image:radial-gradient(circle,transparent 60%,var(--dot) 62%)}
+.piece{font:11.6cqw/1 var(--font-piece);position:relative;z-index:1;cursor:grab;pointer-events:none}
+.piece.w{color:var(--pw);-webkit-text-stroke:.035em var(--pline);paint-order:stroke fill;text-shadow:0 .02em .02em rgba(0,0,0,.25)}
+.piece.b{color:var(--pb);text-shadow:0 .025em 0 rgba(255,255,255,.22)}
+.piece.ghosted{opacity:.25}
+.dragp{position:fixed;left:0;top:0;pointer-events:none;z-index:50;transform:translate(-50%,-50%);line-height:1;font-family:var(--font-piece)}
+.dragp.w{color:var(--pw);-webkit-text-stroke:.035em var(--pline);paint-order:stroke fill}
+.dragp.b{color:var(--pb)}
+.ctrl{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.row.between{justify-content:space-between}
+label{font-weight:500}
+select,input[type=text],textarea{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:7px 10px;min-width:0;max-width:100%}
+select{padding-right:6px}
+textarea{width:100%;font:.88rem/1.45 var(--font-mono);resize:vertical}
+fieldset{border:0;margin:0;padding:0;display:flex;gap:16px;flex-wrap:wrap}
+fieldset label{font-weight:400;display:flex;gap:6px;align-items:center}
+.note{color:var(--muted);font-size:.9rem}
+.msg{min-height:1.4em;font-size:.92rem}
+.msg.good{color:var(--good)}.msg.bad{color:var(--bad)}.msg.info{color:var(--muted)}
+details{border-top:1px solid var(--line);padding-top:12px}
+summary{cursor:pointer;font-weight:500}
+details[open] summary{margin-bottom:10px}
+
+.movelist{display:flex;flex-wrap:wrap;align-items:center;gap:2px 4px;font-family:var(--font-mono);font-size:.95rem;min-height:2.2em}
+.mn{color:var(--muted);margin-left:6px}
+.mv{background:none;border:0;border-radius:4px;padding:2px 5px;cursor:pointer;font:inherit}
+.mv:hover{background:var(--panel2)}
+.mv.cur{background:var(--accent);color:var(--accent-ink)}
+.mono{font-family:var(--font-mono);font-size:.92rem}
+
+.lines{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:0}
+.lines li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;padding:10px 0;border-top:1px solid var(--line);align-items:center}
+.lines li:first-child{border-top:0}
+.lines .mono{overflow-wrap:anywhere}
+.chip{display:inline-block;font-size:.78rem;border:1px solid var(--line);border-radius:999px;padding:1px 8px;color:var(--muted);white-space:nowrap}
+.chip.due{color:var(--warn);border-color:var(--warn)}
+.chip.new{color:var(--accent);border-color:var(--accent)}
+.acts{display:flex;gap:6px}
+
+.status{margin:0;font-size:1.05rem;font-weight:500;min-height:3em}
+.status.bad{color:var(--bad)}.status.good{color:var(--good)}
+
+.stats{display:flex;gap:10px 28px;flex-wrap:wrap}
+.stats div{display:flex;flex-direction:column}
+.stats b{font:700 1.7rem/1.1 var(--font-display);font-variant-numeric:tabular-nums}
+.stats span{color:var(--muted);font-size:.85rem}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.fchip{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:5px 12px;cursor:pointer;font-size:.9rem}
+.fchip[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.gamewrap{display:grid;gap:16px;max-width:900px}
+.gcard{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.ghead{display:flex;gap:6px 12px;flex-wrap:wrap;align-items:baseline;font-size:.88rem;color:var(--muted)}
+.ghead b{color:var(--ink);font-weight:600}
+.gmoves{font-family:var(--font-mono);font-size:.92rem;overflow-wrap:anywhere}
+.gmoves .ok{color:var(--good)}.gmoves .x{color:var(--bad);font-weight:600}.gmoves .nv{color:var(--nov);font-weight:600}.gmoves .dim{color:var(--muted)}
+.gnote{font-size:.93rem}
+.slips{display:flex;flex-direction:column;gap:0;margin:0;padding:0;list-style:none}
+.slips li{padding:9px 0;border-top:1px solid var(--line);display:flex;gap:6px 14px;justify-content:space-between;flex-wrap:wrap;align-items:center}
+.slips li:first-child{border-top:0}
+.slips .cnt{font:700 1.1rem var(--font-display);color:var(--bad);margin-right:8px}
+a{color:var(--accent)}
+
+.overlay{position:fixed;inset:0;background:rgba(10,14,22,.6);display:grid;place-items:center;padding:16px;z-index:40}
+.dlg{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;width:min(640px,100%);max-height:90vh;overflow:auto;display:flex;flex-direction:column;gap:12px}
+@media (prefers-reduced-motion:no-preference){.sq{transition:box-shadow .15s}}
+input[type=range]{accent-color:var(--accent);width:min(320px,100%)}
+.tabs{flex-wrap:wrap}
+.tree{display:flex;flex-direction:column;min-width:0}
+.tree ul{list-style:none;margin:4px 0 0 10px;padding:0 0 0 14px;border-left:2px solid var(--line);display:flex;flex-direction:column;gap:6px}
+.tree>ul{margin-left:0;border-left:0;padding-left:0}
+.chain{display:flex;flex-wrap:wrap;align-items:center;gap:2px;font-family:var(--font-mono);font-size:.92rem}
+.tn{background:none;border:0;border-radius:4px;padding:2px 5px;cursor:pointer;font:inherit;color:inherit}
+.tn:hover{background:var(--panel2)}
+.tn.own{color:var(--accent);font-weight:500}
+.tlink{background:var(--panel2);border:1px dashed var(--nov);color:var(--nov);border-radius:999px;padding:1px 10px;cursor:pointer;font:.8rem var(--font-body);margin-left:6px;text-align:left;overflow-wrap:anywhere}
+summary h2{display:inline;margin-right:8px}
+#board-ed{position:relative}
+.shapes{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3}
+.nmark{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--warn);margin-left:5px;vertical-align:1px}
+.nmark.ring{background:none;border:1.5px solid var(--warn)}
+#ed-boardnote.boardnote{margin:8px 0 0;font-size:.95rem;color:var(--ink);max-width:580px}
+#board-ed.previewing{outline:2px dashed var(--accent);outline-offset:3px}
+.tn.cur{background:var(--accent);color:var(--accent-ink)}
+.tdel{background:none;border:1px solid var(--line);color:var(--muted);border-radius:4px;padding:0 6px;margin-left:6px;cursor:pointer;font:.85rem var(--font-body);line-height:1.4}
+.tdel:hover{color:var(--bad);border-color:var(--bad)}
+.tnote{font:.85rem/1.4 var(--font-body);color:var(--muted);margin:2px 0 4px 6px;border-left:2px solid var(--accent);padding-left:8px;overflow-wrap:anywhere}
+.tnote b{font-family:var(--font-mono);font-weight:500;color:var(--ink)}
+.pc{font:600 .68rem var(--font-body);margin-left:5px;padding:0 5px;border-radius:999px;border:1px solid currentColor;vertical-align:1px}
+.pc-good{color:var(--good)}.pc-warn{color:var(--warn)}.pc-bad{color:var(--bad)}
+.tn.cur .pc{color:inherit}
+.tn.gapmv{border:1px dashed var(--bad);color:var(--bad);display:inline-flex;align-items:baseline;gap:8px;padding:2px 8px}
+.tn.gapmv .gapfreq{font:600 .8rem var(--font-body)}
+.tn.gapmv .gapn{font:.78rem var(--font-body);color:var(--muted)}
+.lineblk{border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:8px}
+.lineblk:first-of-type{border-top:0;padding-top:0}
+.annline{display:flex;flex-wrap:wrap;align-items:flex-end;gap:2px 0}
+.ann{display:inline-flex;flex-direction:column;align-items:center;margin:0 7px 4px 0;min-width:2.2em}
+.ann b{font:500 .95rem var(--font-mono)}
+.ann i{font:normal .72rem var(--font-body);color:var(--muted);white-space:nowrap}
+.ann{background:none;border:0;border-radius:5px;cursor:pointer;font:inherit;color:inherit;padding:2px 5px}
+.ann:hover{background:var(--panel2)}
+.ann.own b{color:var(--accent)}
+.ann.gapmv{border:1px dashed var(--bad)}
+.ann.gapmv b,.ann.gapmv i{color:var(--bad)}
+.or{color:var(--muted);font-size:.8rem;margin:0 6px 4px 0;align-self:center}
+.gapwhat{min-width:0;overflow-wrap:anywhere}
+.gapfreq{color:var(--bad);font-weight:600}
+</style>
+
+<div class="app">
+  <header class="top">
+    <div class="brand"><span class="mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span><h1>Opening Drill</h1></div>
+    <nav class="tabs" role="tablist" aria-label="Sections">
+      <button class="tab" role="tab" data-view="book" aria-selected="true">Book</button>
+      <button class="tab" role="tab" data-view="train" aria-selected="false">Train</button>
+      <button class="tab" role="tab" data-view="games" aria-selected="false">Check games</button>
+      <button class="tab" role="tab" data-view="gaps" aria-selected="false">Find gaps</button>
+    </nav>
+    <button id="btn-backup" class="btn ghost sm">Import / export</button>
+  </header>
+  <div id="banner" class="banner" hidden></div>
+
+  <main>
+    <!-- BOOK -->
+    <section id="view-book" class="split">
+      <div class="boardcol">
+        <div id="board-ed" class="board" aria-label="Chess board for building lines"></div>
+        <p id="ed-preview" class="note" style="margin:8px 0 0" hidden></p>
+        <div id="ed-boardnote" class="tnote boardnote" role="status" hidden></div>
+        <div class="ctrl">
+          <button class="btn ghost sm" id="ed-first" aria-label="Back to start">&laquo;</button>
+          <button class="btn ghost sm" id="ed-prev" aria-label="Previous move">&lsaquo;</button>
+          <button class="btn ghost sm" id="ed-next" aria-label="Next move">&rsaquo;</button>
+          <button class="btn ghost sm" id="ed-last" aria-label="Forward to end">&raquo;</button>
+          <button class="btn ghost sm" id="ed-flip">Flip board</button>
+          <button class="btn sm" id="ed-train" title="Replay the moves to this position, then find the book moves from here">Train from here</button>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="row">
+          <label for="ed-ch">Chapter</label>
+          <select id="ed-ch"></select>
+          <button id="ed-new" class="btn ghost sm">New chapter</button>
+        </div>
+        <form id="ed-newform" class="row" hidden>
+          <input type="text" id="ed-newname" placeholder="e.g. Sicilian Najdorf" maxlength="80" aria-label="Chapter name" required>
+          <fieldset aria-label="Colour you play">
+            <label><input type="radio" name="newcolor" value="w" checked> I play White</label>
+            <label><input type="radio" name="newcolor" value="b"> I play Black</label>
+          </fieldset>
+          <button class="btn sm" type="submit">Create</button>
+          <button class="btn ghost sm" type="button" id="ed-newcancel">Cancel</button>
+        </form>
+        <div id="ed-chmeta" class="row">
+          <label for="ed-name">Name</label>
+          <input type="text" id="ed-name" maxlength="80">
+          <button id="ed-del" class="btn ghost sm danger">Delete chapter</button>
+        </div>
+        <div>
+          <h3>Line on the board</h3>
+          <div id="ed-moves" class="movelist"></div>
+          <div id="ed-bookinfo" class="note" style="margin-top:8px"></div>
+          <div id="ed-trans" class="banner" style="margin:10px 0 0" hidden></div>
+          <div id="ed-notebox" style="margin-top:10px" hidden>
+            <div class="row between"><label for="ed-note" id="ed-notelabel">Note</label><button type="button" id="ed-clearshapes" class="btn ghost sm" hidden>Clear arrows and squares</button></div>
+            <textarea id="ed-note" rows="3" maxlength="500" placeholder="What do you want from this position? A plan, a trap, a move to avoid."></textarea>
+            <p class="note" style="margin:6px 0 0">Right-click a square to highlight it, or right-click and drag to draw an arrow. Hold Shift for red, Ctrl for blue, Alt for yellow.</p>
+          </div>
+        </div>
+        <div class="row">
+          <button id="ed-save" class="btn">Save line to chapter</button>
+          <button id="ed-clear" class="btn ghost">Clear board</button>
+        </div>
+        <div id="ed-msg" class="msg" role="status"></div>
+        <details>
+          <summary>Paste moves or PGN</summary>
+          <textarea id="ed-paste" rows="4" placeholder="1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 ..."></textarea>
+          <div class="row" style="margin-top:8px"><button id="ed-import" class="btn ghost sm">Add to chapter</button><span class="note">Several games in one PGN become several lines.</span></div>
+        </details>
+        <div>
+          <div class="row between"><h3 id="ed-linestitle" style="margin:0">Tree</h3><label class="row" style="font-weight:400;gap:6px"><input type="checkbox" id="ed-showgaps" checked> Show gaps</label></div>
+          <p id="ed-gapinfo" class="note" style="margin:6px 0 10px"></p>
+          <div id="ed-tree" class="tree"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TRAIN -->
+    <section id="view-train" class="split" hidden>
+      <div class="boardcol">
+        <div id="board-tr" class="board" aria-label="Chess board for training"></div>
+      </div>
+      <div>
+        <div class="panel" id="tr-setup">
+          <h2>Train your book</h2>
+          <div class="row"><label for="tr-scope">Practise</label><select id="tr-scope"></select></div>
+          <fieldset aria-label="Which lines">
+            <label><input type="radio" name="trmode" value="due" checked> Lines that are due</label>
+            <label><input type="radio" name="trmode" value="all"> Every line</label>
+          </fieldset>
+          <div id="tr-counts" class="note"></div>
+          <p id="tr-summary" class="msg" role="status"></p>
+          <div class="row"><button id="tr-start" class="btn">Start session</button></div>
+          <p class="note" style="margin:0">You play your side. The opponent's moves are played for you. A clean run moves a line to a longer interval; a slip brings it back today.</p>
+        </div>
+        <div class="panel" id="tr-run" hidden>
+          <div class="row between"><div id="tr-prog" class="note"></div><button id="tr-stop" class="btn ghost sm">End session</button></div>
+          <h2 id="tr-chname"></h2>
+          <p id="tr-status" class="status" role="status"></p>
+          <p id="tr-note" class="note" hidden></p>
+          <div id="tr-moves" class="movelist"></div>
+          <div class="row">
+            <button id="tr-skipintro" class="btn ghost" hidden>Skip intro</button>
+            <button id="tr-hint" class="btn ghost">Hint</button>
+            <button id="tr-replay" class="btn ghost" hidden>Replay the way here</button>
+            <button id="tr-restart" class="btn ghost">Restart line</button>
+            <button id="tr-skip" class="btn ghost">Skip</button>
+            <button id="tr-next" class="btn" hidden>Next line</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- GAMES -->
+    <section id="view-games" hidden>
+      <div class="gamewrap">
+        <div class="panel" id="gm-panel">
+          <h2>Your chess.com games</h2>
+          <div class="row">
+            <label for="gm-user">chess.com username</label>
+            <input type="text" id="gm-user" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="40">
+            <label for="gm-months">Last</label>
+            <select id="gm-months"><option value="1">1 month</option><option value="2">2 months</option><option value="3">3 months</option><option value="6">6 months</option><option value="12">12 months</option><option value="24">24 months</option></select>
+            <button id="gm-fetch" class="btn">Fetch games</button>
+          </div>
+          <div id="gm-msg" class="msg" role="status"></div>
+          <details id="gm-pastebox">
+            <summary>Or paste / upload a PGN export</summary>
+            <textarea id="gm-paste" rows="5" placeholder="Paste PGN from chess.com (Archive, then Download)"></textarea>
+            <div class="row" style="margin-top:8px">
+              <button id="gm-analyze" class="btn ghost sm">Check pasted games</button>
+              <input type="file" id="gm-file" accept=".pgn,.txt" aria-label="Upload PGN file">
+            </div>
+          </details>
+        </div>
+        <div id="gm-out"></div>
+      </div>
+    </section>
+      <!-- GAPS -->
+    <section id="view-gaps" hidden>
+      <div class="gamewrap">
+        <div id="gp-slot"></div>
+        <div class="panel">
+          <h2>Gap settings</h2>
+          <p class="note" style="margin:0">Choose which games to count and how common a move must be to matter. Missing moves and the completion of each line then show in the tree on the Book tab.</p>
+          <fieldset aria-label="Games to analyse">
+            <label><input type="radio" name="gpsrc" value="mine" checked> My games</label>
+            <label><input type="radio" name="gpsrc" value="pool"> Other players' games</label>
+          </fieldset>
+          <div id="gp-poolctl" class="row" hidden>
+            <label for="gp-from">Sample from</label>
+            <select id="gp-from"><option value="opp">players I recently faced (your level)</option><option value="top">top rapid and blitz players</option></select>
+            <label for="gp-n">Players</label>
+            <select id="gp-n"><option value="20">20</option><option value="40" selected>40</option><option value="80">80</option></select>
+            <button id="gp-fetch" class="btn">Sample games</button>
+            <button id="gp-clear" class="btn ghost sm">Clear sample</button>
+          </div>
+          <div id="gp-msg" class="msg" role="status"></div>
+          <div>
+            <label for="gp-min">A move counts when it is played at least 1 in <b id="gp-minval">10</b> games</label>
+            <div class="row"><input type="range" id="gp-min" min="2" max="50" value="10" step="1"><span id="gp-maxval" class="note"></span></div>
+          </div>
+        </div>
+        <div class="panel">
+          <h2>Your book against these games</h2>
+          <div id="gp-sum"></div>
+          <div class="row"><button id="gp-tobook" class="btn">See the gaps in the Book tab</button></div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="backup" class="overlay" hidden>
+  <div class="dlg" role="dialog" aria-modal="true" aria-labelledby="bk-title">
+    <h2 id="bk-title">Import and export</h2>
+    <h3>Export as PGN</h3>
+    <p class="note" style="margin:0">PGN with variations and comments opens in Lichess studies, ChessBase, SCID and most other chess tools. Each chapter becomes one game, your notes become comments, and the colour you play is stored in an Orientation tag.</p>
+    <div class="row"><label for="pgn-scope">Export</label><select id="pgn-scope"></select></div>
+    <textarea id="pgn-out" rows="6" readonly aria-label="PGN export"></textarea>
+    <div class="row"><button id="pgn-copy" class="btn sm">Copy</button><button id="pgn-save" class="btn ghost sm">Save file</button><span id="pgn-outmsg" class="msg"></span></div>
+    <h3>Import a PGN</h3>
+    <p class="note" style="margin:0">Each game in the file becomes a chapter, and every variation becomes a line. A chapter with the same name and colour is merged into.</p>
+    <textarea id="pgn-in" rows="5" placeholder="Paste a PGN here" aria-label="PGN to import"></textarea>
+    <div class="row"><input type="file" id="pgn-file" accept=".pgn,.txt" aria-label="Choose a PGN file"></div>
+    <fieldset aria-label="Colour when the PGN does not say">
+      <span class="note">If a game has no Orientation tag, I play:</span>
+      <label><input type="radio" name="impcolor" value="w" checked> White</label>
+      <label><input type="radio" name="impcolor" value="b"> Black</label>
+    </fieldset>
+    <div class="row"><button id="pgn-import" class="btn">Import</button></div>
+    <div id="pgn-inmsg" class="msg" role="status"></div>
+    <details>
+      <summary>Full backup (keeps your training progress)</summary>
+      <p class="note">The PGN does not carry review dates. This copy does, but only this app reads it.</p>
+      <label for="bk-out">Your book</label>
+      <textarea id="bk-out" rows="5" readonly></textarea>
+      <div class="row"><button id="bk-copy" class="btn sm">Copy</button><span id="bk-copymsg" class="msg"></span></div>
+      <label for="bk-in">Restore from a backup</label>
+      <textarea id="bk-in" rows="4" placeholder="Paste a backup here"></textarea>
+      <div class="row"><button id="bk-restore" class="btn ghost sm">Replace my book with this</button><span id="bk-restoremsg" class="msg"></span></div>
+    </details>
+    <div class="row"><button id="bk-close" class="btn">Close</button></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+<script>
+(function(){
+'use strict';
+var $=function(s,r){return (r||document).querySelector(s)};
+var $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+var esc=function(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
+var sleep=function(ms){return new Promise(function(r){setTimeout(r,ms)})};
+var uid=function(){return Math.random().toString(36).slice(2,9)};
+var DAY=864e5, INT=[0,1,3,7,16,35,80];
+var KEY='opening-drill.v1';
+
+if(typeof Chess==='undefined'){
+  var b=$('#banner'); b.hidden=false;
+  b.textContent='The chess engine could not load (it comes from a CDN, so this page needs an internet connection). Reload once you are online.';
+  return;
+}
+
+/* ---------- storage ---------- */
+var storageOk=true;
+function mk(moves){return {id:uid(),moves:moves,box:0,due:0,seen:0,miss:0}}
+function seedDB(){
+  return {v:1,settings:{user:'',months:2},chapters:[
+    {id:uid(),name:'Italian Game (example)',color:'w',lines:[
+      mk(['e4','e5','Nf3','Nc6','Bc4','Bc5','c3','Nf6','d3']),
+      mk(['e4','e5','Nf3','Nc6','Bc4','Nf6','d3','Be7'])]},
+    {id:uid(),name:'Caro-Kann (example)',color:'b',lines:[
+      mk(['e4','c6','d4','d5','Nc3','dxe4','Nxe4','Bf5']),
+      mk(['e4','c6','d4','d5','e5','Bf5'])]}
+  ]};
+}
+function sanitize(d){
+  if(!d||!Array.isArray(d.chapters)) return null;
+  var out={v:1,settings:{user:'',months:2},chapters:[]};
+  if(d.settings){out.settings.user=String(d.settings.user||'').slice(0,40);var mo=+d.settings.months;out.settings.months=[1,2,3,6,12,24].indexOf(mo)>=0?mo:2}
+  d.chapters.forEach(function(c){
+    if(!c||!Array.isArray(c.lines)) return;
+    var ch={id:String(c.id||uid()),name:String(c.name||'Untitled').slice(0,80),color:c.color==='b'?'b':'w',lines:[],notes:{},shapes:{}};
+    if(c.notes&&typeof c.notes==='object'){Object.keys(c.notes).forEach(function(k){var t=c.notes[k];if(typeof t==='string'&&t.trim())ch.notes[k]=t.trim().slice(0,500)})}
+    if(c.shapes&&typeof c.shapes==='object'){Object.keys(c.shapes).forEach(function(k){var a=cleanShapes(c.shapes[k]);if(a.length)ch.shapes[k]=a})}
+    c.lines.forEach(function(l){
+      if(!l||!Array.isArray(l.moves)||!l.moves.length) return;
+      var g=new Chess(),ok=true;
+      for(var i=0;i<l.moves.length;i++){ if(!g.move(String(l.moves[i]))){ok=false;break} }
+      if(!ok) return;
+      ch.lines.push({id:String(l.id||uid()),moves:g.history(),box:+l.box||0,due:+l.due||0,seen:+l.seen||0,miss:+l.miss||0});
+    });
+    out.chapters.push(ch);
+  });
+  return out;
+}
+function loadDB(){try{var s=localStorage.getItem(KEY);if(!s)return null;return sanitize(JSON.parse(s))}catch(e){return null}}
+function save(){
+  try{localStorage.setItem(KEY,JSON.stringify(DB));storageOk=true}catch(e){storageOk=false}
+  var b=$('#banner');
+  if(!storageOk){b.hidden=false;b.textContent='This browser is not keeping data for this page. Use Backup to copy your book before you leave.'}
+  else if(b.textContent.indexOf('not keeping')>=0){b.hidden=true}
+}
+var DB=loadDB()||seedDB();
+
+/* ---------- book tree ---------- */
+function key(fen){return fen.split(' ').slice(0,3).join(' ')}
+var TREES={w:new Map(),b:new Map()};
+var NODES={w:new Map(),b:new Map()};
+function buildNodes(){
+  NODES={w:new Map(),b:new Map()};
+  DB.chapters.forEach(function(ch){
+    var N=NODES[ch.color];
+    if(!N.size)N.set(key(new Chess().fen()),{path:[],chId:ch.id,chName:ch.name});
+    ch.lines.forEach(function(ln){
+      var g=new Chess();
+      for(var i=0;i<ln.moves.length;i++){
+        if(!g.move(ln.moves[i]))break;
+        var k=key(g.fen());
+        if(!N.has(k))N.set(k,{path:ln.moves.slice(0,i+1),chId:ch.id,chName:ch.name});
+      }
+    });
+  });
+}
+function rebuild(){
+  buildNodes();
+  TREES={w:new Map(),b:new Map()};
+  DB.chapters.forEach(function(ch){
+    var T=TREES[ch.color];
+    ch.lines.forEach(function(ln){
+      var g=new Chess();
+      for(var i=0;i<ln.moves.length;i++){
+        var k=key(g.fen()),m=T.get(k);
+        if(!m){m=new Map();T.set(k,m)}
+        if(!m.has(ln.moves[i])) m.set(ln.moves[i],{chId:ch.id,chName:ch.name});
+        if(!g.move(ln.moves[i])) break;
+      }
+    });
+  });
+}
+function commit(){rebuild();save()}
+function chById(id){return DB.chapters.filter(function(c){return c.id===id})[0]||null}
+function isPrefix(a,b){if(a.length>b.length)return false;for(var i=0;i<a.length;i++){if(a[i]!==b[i])return false}return true}
+function addLine(ch,moves){
+  if(!moves.length) return 'empty';
+  addLine.cut=null;
+  addLine.final=moves;
+  for(var i=0;i<ch.lines.length;i++){ if(isPrefix(moves,ch.lines[i].moves)) return 'exists'; }
+  for(var j=0;j<ch.lines.length;j++){
+    if(isPrefix(ch.lines[j].moves,moves)){ch.lines[j].moves=moves.slice();ch.lines[j].box=0;ch.lines[j].due=0;return 'extended'}
+  }
+  ch.lines.push(mk(moves.slice()));return 'added';
+}
+function fmt(moves,start){
+  var s=[],o=start||0;
+  moves.forEach(function(m,i){var p=i+o; if(p%2===0) s.push((p/2+1)+'.'+m); else if(i===0) s.push((Math.floor(p/2)+1)+'...'+m); else s.push(m)});
+  return s.join(' ');
+}
+function dueLabel(ln){
+  if(!ln.seen) return ['new','new'];
+  if(ln.due<=Date.now()) return ['due now','due'];
+  var d=Math.ceil((ln.due-Date.now())/DAY);
+  return ['due in '+d+' d',''];
+}
+
+/* ---------- PGN parsing ---------- */
+function parsePGNs(text){
+  text=String(text).replace(/\r\n?/g,'\n').trim();
+  if(!text) return [];
+  var chunks=text.split(/\n(?=\[Event\s)/).map(function(s){return s.trim()}).filter(Boolean);
+  var out=[];
+  chunks.forEach(function(c){
+    var g=new Chess();
+    var ok=false; try{ok=g.load_pgn(c,{sloppy:true})}catch(e){ok=false}
+    if(ok&&g.history().length){out.push({moves:g.history(),headers:g.header()});return}
+    var toks=c.replace(/\[[^\]]*\]/g,' ').replace(/\{[^}]*\}/g,' ').replace(/\d+\.(\.\.)?/g,' ').replace(/\s+/g,' ').trim().split(' ')
+      .filter(function(t){return t&&!/^(1-0|0-1|1\/2-1\/2|\*)$/.test(t)});
+    var g2=new Chess(),good=toks.length>0;
+    for(var i=0;i<toks.length;i++){ if(!g2.move(toks[i],{sloppy:true})){good=false;break} }
+    if(good) out.push({moves:g2.history(),headers:{}});
+  });
+  return out;
+}
+
+/* ---------- board ---------- */
+var GLYPH={k:'♚',q:'♛',r:'♜',b:'♝',n:'♞',p:'♟'};
+function Board(root,onMove){
+  var self=this;
+  this.root=root;this.onMove=onMove;this.cells=[];this.sel=null;this.state=null;this.drag=null;this.ghost=null;
+  for(var i=0;i<64;i++){var d=document.createElement('div');d.className='sq';root.appendChild(d);this.cells.push(d)}
+  root.addEventListener('pointerdown',function(e){self.down(e)});
+  root.addEventListener('pointerup',function(e){self.up(e)});
+  root.addEventListener('pointermove',function(e){self.move(e)});
+  root.addEventListener('pointercancel',function(){self.cancel()});
+}
+Board.prototype.set=function(state){this.state=state;this.sel=null;this.paint()};
+Board.prototype.targets=function(){
+  var t={},s=this.state;
+  if(this.sel&&s){s.game.moves({square:this.sel,verbose:true}).forEach(function(m){t[m.to]=m})}
+  return t;
+};
+Board.prototype.paint=function(){
+  var s=this.state; if(!s) return;
+  var bd=s.game.board(),tg=this.targets(),white=s.orientation==='w',self=this;
+  this.cells.forEach(function(c,i){
+    var row=Math.floor(i/8),col=i%8,f=white?col:7-col,r=white?7-row:row;
+    var sq='abcdefgh'.charAt(f)+(r+1),p=bd[7-r][f];
+    c.dataset.sq=sq;
+    c.className='sq '+(((f+r)%2===0)?'d':'l');
+    if(s.last&&(s.last[0]===sq||s.last[1]===sq)) c.classList.add('last');
+    if(s.hint&&s.hint.indexOf(sq)>=0) c.classList.add('hint');
+    if(self.sel===sq) c.classList.add('sel');
+    if(tg[sq]) c.classList.add(p?'cap':'dot');
+    c.dataset.f=(row===7)?'abcdefgh'.charAt(f):'';
+    c.dataset.r=(col===0)?String(r+1):'';
+    c.innerHTML=p?'<span class="piece '+p.color+'">'+GLYPH[p.type]+'︎</span>':'';
+  });
+};
+Board.prototype.flash=function(sq){
+  var c=this.cells.filter(function(x){return x.dataset.sq===sq})[0];
+  if(!c) return; c.classList.add('bad'); setTimeout(function(){c.classList.remove('bad')},550);
+};
+Board.prototype.down=function(e){
+  if(e.button!==undefined&&e.button!==0) return;
+  var s=this.state; if(!s||!s.interactive) return;
+  var c=e.target.closest&&e.target.closest('.sq'); if(!c) return;
+  var sq=c.dataset.sq,g=s.game,tg=this.targets();
+  if(this.sel&&this.sel!==sq&&tg[sq]){this.attempt(this.sel,sq);return}
+  var p=g.get(sq);
+  if(p&&p.color===g.turn()&&(!s.side||s.side===p.color)){
+    this.sel=sq;this.paint();
+    var pe=this.cells.filter(function(x){return x.dataset.sq===sq})[0].querySelector('.piece');
+    if(pe){
+      pe.classList.add('ghosted');
+      var gh=document.createElement('span');gh.className='dragp '+p.color;gh.textContent=GLYPH[p.type]+'︎';
+      gh.style.fontSize=getComputedStyle(pe).fontSize;
+      gh.style.left=e.clientX+'px';gh.style.top=e.clientY+'px';
+      document.body.appendChild(gh);this.ghost=gh;
+      this.drag={from:sq};
+      try{this.root.setPointerCapture(e.pointerId)}catch(_){}
+    }
+  }else{this.sel=null;this.paint()}
+};
+Board.prototype.move=function(e){if(this.ghost){this.ghost.style.left=e.clientX+'px';this.ghost.style.top=e.clientY+'px'}};
+Board.prototype.clearGhost=function(){if(this.ghost){this.ghost.remove();this.ghost=null}};
+Board.prototype.cancel=function(){this.clearGhost();this.drag=null;this.paint()};
+Board.prototype.up=function(e){
+  if(!this.drag) return;
+  var from=this.drag.from;this.drag=null;this.clearGhost();
+  var t=document.elementFromPoint(e.clientX,e.clientY),c=t&&t.closest?t.closest('.sq'):null;
+  var tg=this.targets();
+  if(c&&c.dataset.sq!==from&&tg[c.dataset.sq]){this.attempt(from,c.dataset.sq)}else{this.paint()}
+};
+Board.prototype.attempt=function(from,to){
+  var prev=this.state;this.sel=null;
+  this.onMove(from,to);
+  if(this.state===prev) this.paint();
+};
+
+/* ---------- editor ---------- */
+var ED={chapterId:DB.chapters.length?DB.chapters[0].id:null,moves:[],ply:0,flip:false};
+var edBoard=new Board($('#board-ed'),edMove);
+function edChapter(){return chById(ED.chapterId)}
+function edGame(){var g=new Chess();for(var i=0;i<ED.ply;i++)g.move(ED.moves[i]);return g}
+function edColor(){var c=edChapter();return c?c.color:'w'}
+function transAt(moves){
+  var N=NODES[edColor()],g=new Chess();
+  for(var i=0;i<moves.length;i++){if(!g.move(moves[i]))return null}
+  var nd=N.get(key(g.fen()));
+  if(!nd||nd.path.join(' ')===moves.join(' '))return null;
+  return nd;
+}
+function edMove(from,to){
+  var g=edGame(),m=g.move({from:from,to:to,promotion:'q'});
+  if(!m) return;
+  if(ED.moves[ED.ply]===m.san){ED.ply++}
+  else{ED.moves=ED.moves.slice(0,ED.ply);ED.moves.push(m.san);ED.ply++}
+  setMsg('#ed-msg','');renderEditor();
+}
+function setMsg(sel,text,kind){var e=$(sel);e.textContent=text||'';e.className='msg'+(kind?' '+kind:'')}
+function renderEditor(){
+  var sel=$('#ed-ch');
+  sel.innerHTML=DB.chapters.length?DB.chapters.map(function(c){return '<option value="'+esc(c.id)+'"'+(c.id===ED.chapterId?' selected':'')+'>'+esc(c.name)+' ('+(c.color==='w'?'White':'Black')+')</option>'}).join(''):'<option value="">No chapters yet</option>';
+  var ch=edChapter();
+  $('#ed-chmeta').hidden=!ch;
+  if(ch&&document.activeElement!==$('#ed-name')) $('#ed-name').value=ch.name;
+  var g=edGame(),hist=g.history({verbose:true}),lm=hist.length?hist[hist.length-1]:null;
+  var orient=ED.flip?(edColor()==='w'?'b':'w'):edColor();
+  edBoard.set({game:g,orientation:orient,last:lm?[lm.from,lm.to]:null,interactive:true});
+  clearPreviewUI();
+  updateBoardNote();
+  var h='';
+  ED.moves.forEach(function(m,i){
+    if(i%2===0) h+='<span class="mn">'+(i/2+1)+'.</span>';
+    h+='<button class="mv'+(i+1===ED.ply?' cur':'')+'" data-ply="'+(i+1)+'">'+esc(m)+'</button>';
+  });
+  $('#ed-moves').innerHTML=h||'<span class="muted">Play moves on the board to build a line.</span>';
+  var kids=ch?TREES[ch.color].get(key(g.fen())):null;
+  $('#ed-bookinfo').textContent=!ch?'Create a chapter to start your book.':(kids?'Your book here: '+Array.from(kids.keys()).join(', '):'This position is not in your book yet.');
+  $('#ed-train').disabled=!(ch&&kids&&kids.size);
+  var tn=ch?transAt(ED.moves.slice(0,ED.ply)):null;ED.trans=tn;
+  var tb=$('#ed-trans');tb.hidden=!tn;
+  if(tn)tb.innerHTML='This position is also reached via <span class="mono">'+esc(fmt(tn.path))+'</span>'+(tn.chId!==ch.id?' (chapter "'+esc(tn.chName)+'")':'')+'. Both routes share everything after it, so a move you add here shows up under both. <button class="btn sm" id="ed-gotrans" type="button">Show that route</button>';
+  $('#ed-save').disabled=!ch||!ED.moves.length;
+  var nb=$('#ed-notebox'),nk=null,nta=$('#ed-note');
+  if(ch&&ED.ply>0&&chKeys(ch)[key(g.fen())])nk=key(g.fen());
+  nb.hidden=!nk;
+  if(nk){
+    $('#ed-notelabel').textContent='Note for '+moveLabel(ED.ply-1,ED.moves[ED.ply-1])+' (this position)';
+    if(!(document.activeElement===nta&&ED.noteKey===nk))nta.value=(ch.notes||{})[nk]||'';
+  }
+  ED.noteKey=nk;
+  updateClearBtn();
+  renderEdTree();
+}
+function openInEditor(moves,chId){
+  if(chId&&chById(chId)) ED.chapterId=chId;
+  ED.moves=moves.slice();ED.ply=moves.length;ED.flip=false;
+  showView('book');setMsg('#ed-msg','');renderEditor();
+  window.scrollTo(0,0);
+}
+function armed(btn,label,fn){
+  if(btn.dataset.armed){fn();return}
+  btn.dataset.armed='1';var old=btn.textContent;btn.textContent=label;
+  setTimeout(function(){if(btn.isConnected){btn.dataset.armed='';btn.textContent=old}},2600);
+}
+$('#ed-ch').addEventListener('change',function(e){ED.chapterId=e.target.value||null;renderEditor()});
+$('#ed-new').addEventListener('click',function(){$('#ed-newform').hidden=false;$('#ed-newname').focus()});
+$('#ed-newcancel').addEventListener('click',function(){$('#ed-newform').hidden=true});
+$('#ed-newform').addEventListener('submit',function(e){
+  e.preventDefault();
+  var name=$('#ed-newname').value.trim();if(!name)return;
+  var color=document.querySelector('input[name=newcolor]:checked').value;
+  var ch={id:uid(),name:name,color:color,lines:[],notes:{},shapes:{}};
+  DB.chapters.push(ch);ED.chapterId=ch.id;commit();
+  $('#ed-newname').value='';$('#ed-newform').hidden=true;renderEditor();
+  setMsg('#ed-msg','Chapter created. Play your moves, then save the line.','good');
+});
+$('#ed-name').addEventListener('change',function(e){
+  var ch=edChapter();if(!ch)return;ch.name=e.target.value.trim().slice(0,80)||ch.name;commit();renderEditor();
+});
+$('#ed-del').addEventListener('click',function(e){
+  armed(e.currentTarget,'Confirm delete',function(){
+    DB.chapters=DB.chapters.filter(function(c){return c.id!==ED.chapterId});
+    ED.chapterId=DB.chapters.length?DB.chapters[0].id:null;commit();renderEditor();
+  });
+});
+$('#ed-save').addEventListener('click',function(){
+  var ch=edChapter();if(!ch)return;
+  if(coveredBy(chGraph(ch),ED.moves)){setMsg('#ed-msg','Already in this chapter: every move of it is in the tree.','info');return}
+  var r=addLine(ch,ED.moves),cut=addLine.cut;
+  if(cut){ED.moves=ED.moves.slice(0,cut.at);ED.ply=Math.min(ED.ply,ED.moves.length)}
+  commit();renderEditor();
+  var tail=transAt(ED.moves)?' It reaches a position that another line also reaches. They share everything after it.':'';
+  setMsg('#ed-msg',(r==='added'?'Line saved.':r==='extended'?'Line saved. It extends one you already had.':'That line is already in this chapter.')+tail,r==='exists'?'info':'good');
+});
+$('#ed-clear').addEventListener('click',function(){ED.moves=[];ED.ply=0;setMsg('#ed-msg','');renderEditor()});
+$('#ed-first').addEventListener('click',function(){ED.ply=0;renderEditor()});
+$('#ed-prev').addEventListener('click',function(){ED.ply=Math.max(0,ED.ply-1);renderEditor()});
+$('#ed-next').addEventListener('click',function(){ED.ply=Math.min(ED.moves.length,ED.ply+1);renderEditor()});
+$('#ed-last').addEventListener('click',function(){ED.ply=ED.moves.length;renderEditor()});
+$('#ed-flip').addEventListener('click',function(){ED.flip=!ED.flip;renderEditor()});
+$('#ed-moves').addEventListener('click',function(e){var b=e.target.closest('[data-ply]');if(b){ED.ply=+b.dataset.ply;renderEditor()}});
+$('#ed-import').addEventListener('click',function(){
+  var ch=edChapter();if(!ch){setMsg('#ed-msg','Create a chapter first.','bad');return}
+  var games=parsePGNs($('#ed-paste').value);
+  if(!games.length){setMsg('#ed-msg','No readable moves found in that text.','bad');return}
+  var n=0,cuts=0;games.forEach(function(gm){var r=addLine(ch,gm.moves);if(addLine.cut)cuts++;if(r==='added'||r==='extended')n++;rebuild()});
+  commit();$('#ed-paste').value='';renderEditor();
+  setMsg('#ed-msg',n+' line'+(n===1?'':'s')+' added from '+games.length+' pasted.'+(cuts?' '+cuts+' stopped where they reach a position already in your book.':''),'good');
+});
+document.addEventListener('keydown',function(e){
+  if($('#view-book').hidden||/INPUT|TEXTAREA|SELECT/.test((document.activeElement||{}).tagName||'')) return;
+  if(e.key==='ArrowLeft'){ED.ply=Math.max(0,ED.ply-1);renderEditor()}
+  if(e.key==='ArrowRight'){ED.ply=Math.min(ED.moves.length,ED.ply+1);renderEditor()}
+});
+
+/* ---------- training ---------- */
+var TR={token:0,active:false,queue:[],total:0,done:0,clean:0,slipped:0,requeued:{},ch:null,line:null,game:null,idx:0,slips:{},nslips:0,attempts:0,hintLevel:0,manualHint:false,busy:false,over:false,status:'',statusKind:'',from:0,introing:false,skipIntro:false,prompted:false};
+var trBoard=new Board($('#board-tr'),trMove);
+function userTurn(){return (TR.game.turn()==='w')===(TR.ch.color==='w')}
+function setStatus(t,k){TR.status=t;TR.statusKind=k||'';var s=$('#tr-status');s.textContent=t;s.className='status'+(k?' '+k:'')}
+function renderTrainSetup(){
+  var sel=$('#tr-scope'),cur=sel.value||'all';
+  sel.innerHTML='<option value="all">All chapters</option>'+DB.chapters.map(function(c){return '<option value="'+esc(c.id)+'">'+esc(c.name)+' ('+(c.color==='w'?'White':'Black')+')</option>'}).join('');
+  sel.value=chById(cur)?cur:'all';
+  updateCounts();
+  if(!TR.active) trBoard.set({game:new Chess(),orientation:'w',interactive:false});
+}
+function scopeItems(mode){
+  var scope=$('#tr-scope').value,items=[];
+  DB.chapters.forEach(function(ch){
+    if(scope!=='all'&&ch.id!==scope) return;
+    ch.lines.forEach(function(ln){if(mode==='all'||ln.due<=Date.now()) items.push({ch:ch,ln:ln})});
+  });
+  return items;
+}
+function updateCounts(){
+  var all=scopeItems('all').length,due=scopeItems('due').length;
+  $('#tr-counts').textContent=all?(all+' line'+(all===1?'':'s')+' in this selection, '+due+' due now.'):'No lines yet. Build some in the Book tab first.';
+  $('#tr-start').disabled=!all;
+}
+$('#tr-scope').addEventListener('change',updateCounts);
+function trStart(){
+  var mode=document.querySelector('input[name=trmode]:checked').value;
+  var items=scopeItems(mode);
+  if(!items.length){setMsg('#tr-summary','Nothing is due in that selection. Choose "Every line" to practise anyway.','info');return}
+  for(var i=items.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=items[i];items[i]=items[j];items[j]=t}
+  items.sort(function(a,b){return a.ln.due-b.ln.due});
+  TR.token++;TR.active=true;TR.queue=items;TR.total=items.length;TR.done=0;TR.clean=0;TR.slipped=0;TR.requeued={};
+  setMsg('#tr-summary','');
+  $('#tr-setup').hidden=true;$('#tr-run').hidden=false;
+  trNext();
+}
+function trNext(){
+  if(!TR.queue.length){trStop(true);return}
+  var it=TR.queue.shift();trLoad(it.ch,it.ln,it.from,it.slow);
+}
+function trLoad(ch,ln,from,slow){
+  TR.token++;from=from||0;
+  TR.ch=ch;TR.line=ln;TR.from=from;TR.game=new Chess();TR.idx=0;TR.slips={};TR.nslips=0;TR.attempts=0;TR.hintLevel=0;TR.manualHint=false;TR.over=false;TR.busy=false;TR.introing=false;TR.skipIntro=false;TR.prompted=false;
+  if(from>0&&!slow){for(var i=0;i<from;i++)TR.game.move(ln.moves[i]);TR.idx=from}
+  $('#tr-next').hidden=true;$('#tr-hint').hidden=false;$('#tr-restart').hidden=false;$('#tr-skip').hidden=false;
+  $('#tr-skipintro').hidden=true;$('#tr-replay').hidden=!(from>0);
+  $('#tr-chname').textContent=ch.name+' ('+(ch.color==='w'?'White':'Black')+')'+(from>0?' \u00b7 from after '+moveLabel(from-1,ln.moves[from-1]):'');
+  setStatus('Get ready.','');
+  if(from>0&&slow){trIntro(TR.token)}else{trPaint();trAuto(TR.token)}
+}
+async function trIntro(tok){
+  TR.busy=true;TR.introing=true;TR.skipIntro=false;
+  $('#tr-skipintro').hidden=false;
+  setStatus('Watch how the line gets to this position.','');trPaint();
+  await sleep(600);
+  while(tok===TR.token&&TR.idx<TR.from&&!TR.skipIntro){
+    TR.game.move(TR.line.moves[TR.idx]);TR.idx++;trPaint();
+    await sleep(1000);
+  }
+  if(tok!==TR.token)return;
+  while(TR.idx<TR.from){TR.game.move(TR.line.moves[TR.idx]);TR.idx++}
+  TR.introing=false;TR.skipIntro=false;$('#tr-skipintro').hidden=true;
+  trAuto(tok);
+}
+function posKeyOf(moves){var g=new Chess();for(var i=0;i<moves.length;i++){if(!g.move(moves[i]))return null}return key(g.fen())}
+function trainFromHere(){
+  var ch=edChapter();if(!ch)return;
+  var path=ED.moves.slice(0,ED.ply),pk=posKeyOf(path),items=[];
+  if(!pk)return;
+  ch.lines.forEach(function(ln){
+    var g=new Chess();
+    for(var i=0;;i++){
+      if(key(g.fen())===pk){if(i<ln.moves.length)items.push({ch:ch,ln:ln,from:i});break}
+      if(i>=ln.moves.length||!g.move(ln.moves[i]))break;
+    }
+  });
+  if(!items.length){setMsg('#ed-msg','Nothing to learn from this position: no saved line continues from here.','bad');return}
+  for(var i=items.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=items[i];items[i]=items[j];items[j]=t}
+  items[0].slow=true;
+  showView('train');
+  TR.token++;TR.active=true;TR.queue=items;TR.total=items.length;TR.done=0;TR.clean=0;TR.slipped=0;TR.requeued={};
+  setMsg('#tr-summary','');
+  $('#tr-setup').hidden=true;$('#tr-run').hidden=false;
+  trNext();
+}
+function trPaint(){
+  var hist=TR.game.history({verbose:true}),lm=hist.length?hist[hist.length-1]:null,hint=null;
+  if(TR.hintLevel>0&&!TR.over&&userTurn()){
+    var exp=TR.line.moves[TR.idx],mv=TR.game.moves({verbose:true}).filter(function(m){return m.san===exp})[0];
+    if(mv) hint=TR.hintLevel>1?[mv.from,mv.to]:[mv.from];
+  }
+  trBoard.set({game:TR.game,orientation:TR.ch.color,last:lm?[lm.from,lm.to]:null,hint:hint,interactive:!TR.busy&&!TR.over,side:TR.ch.color});
+  var h='';TR.line.moves.slice(0,TR.idx).forEach(function(m,i){if(i%2===0)h+='<span class="mn">'+(i/2+1)+'.</span>';h+='<span class="mv">'+esc(m)+'</span>'});
+  $('#tr-moves').innerHTML=h;
+  var tnt=(TR.ch.notes||{})[key(TR.game.fen())],tnn=$('#tr-note'),showN=!!tnt&&(TR.over||TR.hintLevel>0);
+  tnn.hidden=!showN;tnn.textContent=showN?'Your note: '+tnt:'';
+  var left=TR.queue.length+(TR.over?0:1);
+  $('#tr-prog').textContent='Done '+TR.done+' · Left '+left;
+}
+async function trAuto(tok){
+  TR.busy=true;trPaint();
+  while(tok===TR.token&&TR.idx<TR.line.moves.length&&!userTurn()){
+    await sleep(TR.idx===0?300:480);
+    if(tok!==TR.token) return;
+    TR.game.move(TR.line.moves[TR.idx]);TR.idx++;trPaint();
+  }
+  if(tok!==TR.token) return;
+  TR.busy=false;
+  if(TR.idx>=TR.line.moves.length){trFinish();return}
+  setStatus(TR.from>0&&!TR.prompted?'Find the book move from here. You play '+(TR.ch.color==='w'?'White':'Black')+'.':'Your move as '+(TR.ch.color==='w'?'White':'Black')+'.','');TR.prompted=true;trPaint();
+}
+function trMove(from,to){
+  if(!TR.active||TR.busy||TR.over||!userTurn()){trPaint();return}
+  var exp=TR.line.moves[TR.idx],m=TR.game.move({from:from,to:to,promotion:'q'});
+  if(!m){trPaint();return}
+  if(m.san===exp){
+    TR.idx++;TR.attempts=0;TR.hintLevel=0;trPaint();
+    if(TR.idx>=TR.line.moves.length){trFinish();return}
+    trAuto(TR.token);return;
+  }
+  TR.game.undo();
+  var alt=TREES[TR.ch.color].get(key(TR.game.fen()));
+  if(alt&&alt.has(m.san)){setStatus(m.san+' is in your book too, but from a different line. Find the move for this one.','');trPaint();return}
+  if(!TR.slips[TR.idx]){TR.slips[TR.idx]=1;TR.nslips++}
+  TR.attempts++;
+  if(TR.attempts>=3) TR.hintLevel=2; else if(TR.attempts>=2) TR.hintLevel=Math.max(TR.hintLevel,1);
+  setStatus('Not the book move. Try again.'+(TR.hintLevel?' The piece to move is highlighted.':''),'bad');
+  trPaint();trBoard.flash(to);
+}
+function trFinish(){
+  TR.over=true;TR.busy=false;
+  var ln=TR.line,clean=TR.nslips===0&&!TR.manualHint;
+  if(TR.from>0){
+    if(clean)TR.clean++;
+    else{TR.slipped++;if(!TR.requeued[ln.id]){TR.requeued[ln.id]=1;TR.queue.push({ch:TR.ch,ln:ln,from:TR.from})}}
+    TR.done++;
+    setStatus(clean?'Correct all the way. Your review schedule is unchanged.':'Finished with slips. This one comes back once more.',clean?'good':'');
+  }else{
+    ln.seen++;
+    if(clean){ln.box=Math.min(6,ln.box+1);ln.due=Date.now()+INT[ln.box]*DAY;TR.clean++}
+    else{ln.miss++;ln.box=0;ln.due=Date.now();TR.slipped++;if(!TR.requeued[ln.id]){TR.requeued[ln.id]=1;TR.queue.push({ch:TR.ch,ln:ln,from:0})}}
+    TR.done++;save();
+    var d=dueLabel(ln);
+    setStatus(clean?'Clean run. Next review '+d[0].replace('due ','')+'.':'Line finished with slips. It will come back this session.',clean?'good':'');
+  }
+  $('#tr-hint').hidden=true;$('#tr-restart').hidden=false;$('#tr-skip').hidden=true;
+  $('#tr-next').hidden=false;$('#tr-next').textContent=TR.queue.length?'Next line':'Finish';
+  trPaint();
+}
+function trStop(finished){
+  TR.token++;TR.active=false;
+  $('#tr-run').hidden=true;$('#tr-setup').hidden=false;
+  if(finished||TR.done){setMsg('#tr-summary','Session: '+TR.done+' line'+(TR.done===1?'':'s')+' played, '+TR.clean+' clean, '+TR.slipped+' with slips.',TR.slipped?'info':'good')}
+  renderTrainSetup();renderEditor();
+}
+$('#tr-start').addEventListener('click',trStart);
+$('#tr-stop').addEventListener('click',function(){trStop(false)});
+$('#tr-next').addEventListener('click',trNext);
+$('#tr-restart').addEventListener('click',function(){trLoad(TR.ch,TR.line,TR.from,false)});
+$('#tr-replay').addEventListener('click',function(){trLoad(TR.ch,TR.line,TR.from,true)});
+$('#tr-skipintro').addEventListener('click',function(){TR.skipIntro=true});
+$('#ed-train').addEventListener('click',trainFromHere);
+$('#tr-skip').addEventListener('click',function(){
+  if(!TR.queue.length){trLoad(TR.ch,TR.line,TR.from,false);return}
+  TR.queue.push({ch:TR.ch,ln:TR.line,from:TR.from});trNext();
+});
+$('#tr-hint').addEventListener('click',function(){
+  if(TR.over||TR.busy||!userTurn())return;
+  TR.manualHint=true;TR.hintLevel=Math.min(2,TR.hintLevel+1);trPaint();
+});
+
+/* ---------- games ---------- */
+var GM={games:[],filter:'mistake',skipped:0};
+function userColorOf(g,u){var x=u.toLowerCase();if(g.white.toLowerCase()===x)return 'w';if(g.black.toLowerCase()===x)return 'b';return null}
+function analyze(moves,color){
+  var tree=TREES[color];
+  if(!tree.size) return {status:'nobook',ply:0};
+  var g=new Chess(),lastCh=null;
+  for(var i=0;i<moves.length;i++){
+    var kids=tree.get(key(g.fen())),mine=(g.turn()==='w')===(color==='w');
+    if(!kids) return {status:'followed',ply:i,chId:lastCh};
+    var hit=kids.get(moves[i]);
+    if(!hit) return {status:mine?'mistake':'novelty',ply:i,expected:Array.from(kids.keys()),chId:kids.values().next().value.chId,chName:kids.values().next().value.chName,fen:key(g.fen())};
+    lastCh=hit.chId;g.move(moves[i]);
+  }
+  return {status:'followed',ply:moves.length,chId:lastCh};
+}
+function normPGNGame(p,user){
+  var h=p.headers||{},res=h.Result||'';
+  var out={url:h.Link||h.Site||'',white:h.White||'',black:h.Black||'',wr:h.WhiteElo||'',br:h.BlackElo||'',cls:'',date:h.Date||'',moves:p.moves,result:res,variant:h.Variant||''};
+  return out;
+}
+function outcome(g,color){
+  if(g.outcome) return g.outcome;
+  var r=g.result;
+  if(r==='1/2-1/2') return 'Draw';
+  if(r==='1-0') return color==='w'?'Win':'Loss';
+  if(r==='0-1') return color==='b'?'Win':'Loss';
+  return '';
+}
+async function fetchChessCom(user,months){
+  var base='https://api.chess.com/pub/player/'+encodeURIComponent(user.toLowerCase());
+  var a=await fetch(base+'/games/archives');
+  if(!a.ok) throw new Error(a.status===404?'notfound':'http'+a.status);
+  var j=await a.json(),pick=(j.archives||[]).slice(-months),all=[];
+  for(var i=0;i<pick.length;i++){
+    setMsg('#gm-msg','Fetching month '+(i+1)+' of '+pick.length+'...','info');
+    var r=await fetch(pick[i]);if(!r.ok) continue;
+    var jj=await r.json();all=all.concat(jj.games||[]);
+  }
+  return all;
+}
+function fromApi(gm){
+  if(gm.rules&&gm.rules!=='chess') return null;
+  var g=new Chess(),ok=false;
+  try{ok=g.load_pgn(gm.pgn||'',{sloppy:true})}catch(e){ok=false}
+  if(!ok) return null;
+  var w=gm.white||{},b=gm.black||{};
+  var d=gm.end_time?new Date(gm.end_time*1000).toLocaleDateString():'';
+  return {url:gm.url||'',white:w.username||'',black:b.username||'',wr:w.rating||'',br:b.rating||'',cls:gm.time_class||'',date:d,moves:g.history(),
+    apiRes:{w:w.result,b:b.result}};
+}
+function apiOutcome(g,color){
+  var me=g.apiRes[color],op=g.apiRes[color==='w'?'b':'w'];
+  if(me==='win') return 'Win';
+  if(op==='win') return 'Loss';
+  return 'Draw';
+}
+$('#gm-user').value=DB.settings.user;
+$('#gm-months').value=String(DB.settings.months);
+$('#gm-user').addEventListener('change',function(e){DB.settings.user=e.target.value.trim();save()});
+$('#gm-months').addEventListener('change',function(e){DB.settings.months=+e.target.value;save()});
+$('#gm-fetch').addEventListener('click',async function(){
+  var u=$('#gm-user').value.trim();
+  if(!u){setMsg('#gm-msg','Enter your chess.com username first.','bad');return}
+  DB.settings.user=u;DB.settings.months=+$('#gm-months').value;save();
+  var btn=$('#gm-fetch');btn.disabled=true;setMsg('#gm-msg','Fetching games...','info');
+  try{
+    var raw=await fetchChessCom(u,DB.settings.months);
+    var list=raw.map(fromApi).filter(Boolean);
+    GM.games=list;
+    setMsg('#gm-msg',list.length+' standard games loaded.','good');
+    renderGames();renderGaps();
+  }catch(err){
+    if(err&&err.message==='notfound') setMsg('#gm-msg','chess.com has no player with that username.','bad');
+    else if(err&&/^http/.test(err.message||'')) setMsg('#gm-msg','chess.com answered with an error ('+err.message.slice(4)+'). Try again in a minute.','bad');
+    else{setMsg('#gm-msg','This page cannot reach chess.com from where it is open. Open the downloaded app file in your own browser to fetch games directly, or paste a PGN export below.','bad');$('#gm-pastebox').open=true}
+  }
+  btn.disabled=false;
+});
+function analyzePasted(text){
+  var u=$('#gm-user').value.trim();
+  if(!u){setMsg('#gm-msg','Enter your chess.com username so the games can be matched to your colour.','bad');return}
+  DB.settings.user=u;save();
+  var parsed=parsePGNs(text).filter(function(p){return !(p.headers&&p.headers.Variant&&p.headers.Variant!=='Standard')});
+  GM.games=parsed.map(function(p){return normPGNGame(p,u)});
+  setMsg('#gm-msg',GM.games.length?GM.games.length+' games read.':'No games found in that text.',GM.games.length?'good':'bad');
+  renderGames();renderGaps();
+}
+$('#gm-analyze').addEventListener('click',function(){analyzePasted($('#gm-paste').value)});
+$('#gm-file').addEventListener('change',function(e){
+  var f=e.target.files&&e.target.files[0];if(!f)return;
+  var rd=new FileReader();rd.onload=function(){$('#gm-paste').value=rd.result;analyzePasted(String(rd.result))};rd.readAsText(f);
+});
+function moveNo(i){return Math.floor(i/2)+1}
+function gameLine(r){
+  var a=r.a,m=r.g.moves,end=a.status==='followed'?Math.min(m.length,a.ply):Math.min(m.length,a.ply+3),h='';
+  for(var i=0;i<end;i++){
+    if(i%2===0) h+=(i/2+1)+'.';
+    var cls=i<a.ply?'ok':(i===a.ply?(a.status==='mistake'?'x':'nv'):'dim');
+    h+='<span class="'+cls+'">'+esc(m[i])+'</span> ';
+  }
+  if(end<m.length) h+='<span class="dim">...</span>';
+  return h;
+}
+function renderGames(){
+  var out=$('#gm-out'),u=DB.settings.user;
+  if(!GM.games.length){out.innerHTML='';return}
+  var rs=[],skipped=0;
+  GM.games.forEach(function(g){
+    var col=userColorOf(g,u);if(!col){skipped++;return}
+    var a=analyze(g.moves,col);
+    rs.push({g:g,color:col,a:a,out:g.apiRes?apiOutcome(g,col):outcome(g,col)});
+  });
+  if(!rs.length){out.innerHTML='<div class="panel"><p style="margin:0">None of these games were played by "'+esc(u)+'". Check the username spelling.</p></div>';return}
+  var cnt={mistake:0,novelty:0,followed:0,nobook:0};rs.forEach(function(r){cnt[r.a.status]++});
+  var slipMap={};
+  rs.forEach(function(r){
+    if(r.a.status!=='mistake') return;
+    var played=r.g.moves[r.a.ply],k=r.a.fen+'|'+played;
+    if(!slipMap[k]) slipMap[k]={n:0,played:played,exp:r.a.expected,ply:r.a.ply,prefix:r.g.moves.slice(0,r.a.ply),chId:r.a.chId,chName:r.a.chName,color:r.color};
+    slipMap[k].n++;
+  });
+  var slips=Object.keys(slipMap).map(function(k){return slipMap[k]}).sort(function(a,b){return b.n-a.n}).slice(0,8);
+  var h='<div class="panel"><div class="stats">'+
+    '<div><b>'+rs.length+'</b><span>games checked</span></div>'+
+    '<div><b style="color:var(--bad)">'+cnt.mistake+'</b><span>you left your book</span></div>'+
+    '<div><b style="color:var(--nov)">'+cnt.novelty+'</b><span>opponent left your book</span></div>'+
+    '<div><b style="color:var(--good)">'+cnt.followed+'</b><span>followed to the end of a line</span></div></div>'+
+    (skipped?'<p class="note" style="margin:0">'+skipped+' game'+(skipped===1?'':'s')+' skipped because the username was not a player.</p>':'')+'</div>';
+  if(slips.length){
+    h+='<div class="panel"><h2>Where you slip most</h2><ul class="slips">'+slips.map(function(s,i){
+      return '<li><div><span class="cnt">'+s.n+'×</span>After <span class="mono">'+esc(fmt(s.prefix)||'the start')+'</span> you played <b class="mono">'+esc(s.played)+'</b>. Book: <b class="mono">'+esc(s.exp.join(', '))+'</b></div>'+
+        '<button class="btn ghost sm" data-slip="'+i+'">Show position</button></li>';
+    }).join('')+'</ul></div>';
+  }
+  h+='<div class="chips" role="group" aria-label="Filter games">'+[['mistake','Your deviations ('+cnt.mistake+')'],['novelty','Opponent left book ('+cnt.novelty+')'],['followed','Followed book ('+cnt.followed+')'],['all','All ('+rs.length+')']]
+    .map(function(c){return '<button class="fchip" data-filter="'+c[0]+'" aria-pressed="'+(GM.filter===c[0])+'">'+c[1]+'</button>'}).join('')+'</div>';
+  var shown=rs.filter(function(r){return GM.filter==='all'||r.a.status===GM.filter}).slice(0,80);
+  if(!shown.length) h+='<div class="panel"><p style="margin:0" class="muted">Nothing in this group.</p></div>';
+  shown.forEach(function(r,i){
+    var a=r.a,g=r.g,opp=r.color==='w'?g.black:g.white,orat=r.color==='w'?g.br:g.wr,note='';
+    if(a.status==='mistake') note='Move '+moveNo(a.ply)+': you played <b class="mono">'+esc(g.moves[a.ply])+'</b>. Your book plays <b class="mono">'+esc(a.expected.join(', '))+'</b> ('+esc(a.chName)+').';
+    else if(a.status==='novelty') note='Move '+moveNo(a.ply)+': your opponent played <b class="mono">'+esc(g.moves[a.ply])+'</b>, which your book does not cover yet.';
+    else if(a.status==='followed') note='You stayed in your book for '+a.ply+' half-moves.';
+    else note='You have no '+(r.color==='w'?'White':'Black')+' chapter in your book.';
+    var act='';
+    if(a.status==='mistake') act='<button class="btn ghost sm" data-open="'+shownIndex(rs,r)+'">Show in editor</button>';
+    if(a.status==='novelty') act='<button class="btn ghost sm" data-open="'+shownIndex(rs,r)+'">Add a reply in editor</button>';
+    var link=/^https?:\/\//.test(g.url)?'<a href="'+esc(g.url)+'" target="_blank" rel="noopener">Open game</a>':'';
+    h+='<div class="gcard"><div class="ghead"><b>'+(r.color==='w'?'White':'Black')+' vs '+esc(opp)+(orat?' ('+esc(orat)+')':'')+'</b>'+(r.out?'<span>'+r.out+'</span>':'')+(g.cls?'<span>'+esc(g.cls)+'</span>':'')+(g.date?'<span>'+esc(g.date)+'</span>':'')+link+'</div>'+
+      '<div class="gmoves">'+gameLine(r)+'</div><div class="gnote">'+note+'</div>'+(act?'<div class="row">'+act+'</div>':'')+'</div>';
+  });
+  out.innerHTML=h;
+  out._rs=rs;out._slips=slips;
+}
+function shownIndex(rs,r){return rs.indexOf(r)}
+$('#gm-out').addEventListener('click',function(e){
+  var out=$('#gm-out'),f=e.target.closest('[data-filter]');
+  if(f){GM.filter=f.dataset.filter;renderGames();return}
+  var o=e.target.closest('[data-open]');
+  if(o&&out._rs){
+    var r=out._rs[+o.dataset.open];if(!r)return;
+    var moves=r.a.status==='novelty'?r.g.moves.slice(0,r.a.ply+1):r.g.moves.slice(0,r.a.ply);
+    openInEditor(moves,r.a.chId);
+    setMsg('#ed-msg',r.a.status==='novelty'?'Opponent move loaded. Play your reply, then save the line.':'Position before your deviation loaded. Play the book move to review it.','info');
+    return;
+  }
+  var s=e.target.closest('[data-slip]');
+  if(s&&out._slips){var x=out._slips[+s.dataset.slip];if(x)openInEditor(x.prefix,x.chId)}
+});
+
+/* ---------- gap settings and statistics ---------- */
+var GP={x:10};
+var POOL={games:[],seen:{}};
+var STAT={key:'',d:null,used:0};
+var PLY=30;
+function gpSrc(){var r=document.querySelector('input[name=gpsrc]:checked');return r?r.value:'mine'}
+function buildStats(){
+  var src=gpSrc(),u=DB.settings.user,games=src==='pool'?POOL.games:GM.games,ck=src+'|'+games.length+'|'+u;
+  if(STAT.key===ck&&STAT.d)return STAT.d;
+  var d={w:new Map(),b:new Map()},used=0;
+  games.forEach(function(g){
+    var cols=src==='pool'?['w','b']:[userColorOf(g,u)];
+    if(!cols[0])return;
+    used++;
+    var gm=new Chess(),n=Math.min(g.moves.length,PLY);
+    for(var i=0;i<n;i++){
+      var k=key(gm.fen()),mv=g.moves[i];
+      cols.forEach(function(c){var s=d[c].get(k);if(!s){s={n:0,m:{}};d[c].set(k,s)}s.n++;s.m[mv]=(s.m[mv]||0)+1});
+      if(!gm.move(mv))break;
+    }
+  });
+  STAT={key:ck,d:d,used:used};return d;
+}
+function oneIn(c,n){return '1 in '+Math.max(1,Math.round(n/c))}
+function gapStats(){var n=(gpSrc()==='pool'?POOL.games:GM.games).length;return n?buildStats():null}
+/* Gap context for one chapter: which commonly played opponent moves are missing, and how complete each position is. */
+function gapCtxFor(ch){
+  var d=gapStats();if(!d)return null;
+  var color=ch.color,thr=1/GP.x,minReach=gpSrc()==='pool'?5:3,S=d[color],adj=chGraph(ch),T=TREES[color],memo={},busy={};
+  function opp(k){return k.split(' ')[1]!==color}
+  function relevant(k){
+    var s=S.get(k);if(!s||s.n<minReach)return null;
+    var r=[];Object.keys(s.m).forEach(function(san){if(s.m[san]/s.n>=thr)r.push({san:san,n:s.m[san]})});
+    r.sort(function(a,b){return b.n-a.n});
+    return {n:s.n,moves:r};
+  }
+  function covered(k,san){var kids=adj.get(k),tk=T.get(k);return !!((kids&&kids.has(san))||(tk&&tk.has(san)))}
+  function gapsAt(k){
+    var out={n:0,list:[]};
+    if(!opp(k))return out;
+    var r=relevant(k);if(!r)return out;
+    out.n=r.n;
+    r.moves.forEach(function(m){if(!covered(k,m.san))out.list.push(m)});
+    return out;
+  }
+  function avg(kids){if(!kids||!kids.size)return 1;var t=0;kids.forEach(function(ck){t+=comp(ck)});return t/kids.size}
+  function comp(k){
+    if(memo[k]!==undefined)return memo[k];
+    if(busy[k])return 1;
+    busy[k]=1;
+    var kids=adj.get(k),res;
+    var r=opp(k)?relevant(k):null;
+    if(r&&r.moves.length){
+      var tot=0,sum=0;
+      r.moves.forEach(function(m){tot+=m.n});
+      r.moves.forEach(function(m){
+        var ck=kids&&kids.get(m.san);
+        if(ck)sum+=m.n/tot*comp(ck);
+        else if(covered(k,m.san))sum+=m.n/tot;
+      });
+      res=sum;
+    }else res=avg(kids);
+    busy[k]=0;memo[k]=res;return res;
+  }
+  return {adj:adj,gapsAt:gapsAt,comp:comp,
+    countGaps:function(){var n=0;Object.keys(chKeys(ch)).forEach(function(k){n+=gapsAt(k).list.length});return n}};
+}
+function renderGaps(){
+  var src=gpSrc(),sum=$('#gp-sum');
+  $('#gp-poolctl').hidden=(src!=='pool');
+  $('#gp-min').value=String(GP.x);
+  $('#gp-minval').textContent=GP.x;
+  $('#gp-maxval').textContent='that is '+(100/GP.x).toFixed(GP.x>=20?1:0)+'% of games';
+  var have=src==='pool'?POOL.games.length:GM.games.length;
+  if(!have){sum.innerHTML='<p class="note" style="margin:0">'+(src==='pool'?'No sampled games yet.':'No games loaded yet.')+' Load some to see gaps in the Book tab.</p>';return}
+  var tg=0,rows='';
+  DB.chapters.forEach(function(ch){
+    var g=gapCtxFor(ch);if(!g)return;
+    var ng=g.countGaps(),c=g.comp(key(new Chess().fen())),pct=c>=0.9995?100:Math.floor(c*100);
+    tg+=ng;
+    rows+='<li><span>'+esc(ch.name)+' <span class="muted">('+(ch.color==='w'?'White':'Black')+')</span></span><span><b>'+pct+'%</b> complete · '+ng+' gap'+(ng===1?'':'s')+'</span></li>';
+  });
+  sum.innerHTML='<div class="stats"><div><b>'+STAT.used+'</b><span>games analysed</span></div><div><b>'+tg+'</b><span>missing moves at 1 in '+GP.x+'</span></div></div>'+
+    (rows?'<ul class="slips">'+rows+'</ul>':'<p class="note" style="margin:0">Your book is empty.</p>');
+}
+$('#gp-min').addEventListener('input',function(e){GP.x=+e.target.value||10;renderGaps()});
+$$('input[name=gpsrc]').forEach(function(r){r.addEventListener('change',renderGaps)});
+$('#gp-tobook').addEventListener('click',function(){showView('book')});
+async function sampleOthers(){
+  var from=$('#gp-from').value,n=+$('#gp-n').value,names=[],msg='#gp-msg',btn=$('#gp-fetch'),LIMIT=40;
+  btn.disabled=true;STAT.key='';
+  try{
+    if(from==='opp'){
+      var u=(DB.settings.user||'').toLowerCase(),s={};
+      GM.games.forEach(function(g){
+        var o=g.white.toLowerCase()===u?g.black:(g.black.toLowerCase()===u?g.white:null);
+        if(o&&!s[o.toLowerCase()]){s[o.toLowerCase()]=1;names.push(o)}
+      });
+      if(!names.length){setMsg(msg,'Load your own games first (above), so I know who you played.','bad');return}
+    }else{
+      var r=await fetch('https://api.chess.com/pub/leaderboards');
+      if(!r.ok)throw new Error('http'+r.status);
+      var lb=await r.json(),seen={};
+      ['live_rapid','live_blitz'].forEach(function(k){(lb[k]||[]).forEach(function(p){var x=String(p.username||'').toLowerCase();if(x&&!seen[x]){seen[x]=1;names.push(x)}})});
+    }
+    for(var i=names.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=names[i];names[i]=names[j];names[j]=t}
+    names=names.slice(0,n);
+    var done=0,queue=names.slice(),failed=0;
+    var worker=async function(){
+      while(queue.length){
+        var nm=queue.shift();
+        try{
+          var a=await fetch('https://api.chess.com/pub/player/'+encodeURIComponent(nm.toLowerCase())+'/games/archives');
+          if(a.ok){
+            var aj=await a.json(),last=(aj.archives||[]).slice(-1)[0];
+            if(last){
+              var mr=await fetch(last);
+              if(mr.ok){
+                var mj=await mr.json();
+                (mj.games||[]).slice(-LIMIT).forEach(function(gm){
+                  if(gm.time_class==='bullet'||(gm.url&&POOL.seen[gm.url]))return;
+                  var g=fromApi(gm);if(!g)return;
+                  if(g.url)POOL.seen[g.url]=1;POOL.games.push(g);
+                });
+              }
+            }
+          }else failed++;
+        }catch(e){failed++}
+        done++;setMsg(msg,'Sampled '+done+' of '+names.length+' players, '+POOL.games.length+' games so far...','info');
+      }
+    };
+    await Promise.all([worker(),worker(),worker(),worker()]);
+    if(!POOL.games.length)throw new Error('empty');
+    setMsg(msg,POOL.games.length+' games from '+names.length+' players. Rapid and blitz only, most recent month per player.','good');
+    STAT.key='';document.querySelector('input[name=gpsrc][value=pool]').checked=true;
+    renderGaps();
+  }catch(err){
+    setMsg(msg,'This page cannot reach chess.com from where it is open. Open the downloaded app file in your own browser to sample games.','bad');
+  }finally{btn.disabled=false}
+}
+$('#gp-fetch').addEventListener('click',sampleOthers);
+$('#gp-clear').addEventListener('click',function(){POOL.games=[];POOL.seen={};STAT.key='';setMsg('#gp-msg','Sample cleared.','info');renderGaps()});
+
+/* ---------- tree (in the Book tab) ---------- */
+var TP=[];
+function chGraph(ch){
+  var adj=new Map();
+  ch.lines.forEach(function(ln){
+    var g=new Chess();
+    for(var i=0;i<ln.moves.length;i++){
+      var k=key(g.fen()),m=adj.get(k);
+      if(!m){m=new Map();adj.set(k,m)}
+      if(!g.move(ln.moves[i]))break;
+      if(!m.has(ln.moves[i]))m.set(ln.moves[i],key(g.fen()));
+    }
+  });
+  return adj;
+}
+function coveredBy(adj,moves){
+  var g=new Chess();
+  for(var i=0;i<moves.length;i++){
+    var m=adj.get(key(g.fen()));
+    if(!m||!m.has(moves[i]))return false;
+    if(!g.move(moves[i]))return false;
+  }
+  return true;
+}
+function addEdges(adj,moves){
+  var g=new Chess();
+  for(var i=0;i<moves.length;i++){
+    var k=key(g.fen()),m=adj.get(k);
+    if(!m){m=new Map();adj.set(k,m)}
+    if(!g.move(moves[i]))break;
+    if(!m.has(moves[i]))m.set(moves[i],key(g.fen()));
+  }
+}
+function chKeys(ch){
+  var s={},root=key(new Chess().fen());s[root]=1;
+  ch.lines.forEach(function(ln){var g=new Chess();for(var i=0;i<ln.moves.length;i++){if(!g.move(ln.moves[i]))break;s[key(g.fen())]=1}});
+  return s;
+}
+function moveLabel(idx,san){return (idx%2===0?(idx/2+1)+'.':((idx+1)/2)+'...')+san}
+function numHtml(idx){return idx%2===0?'<span class="mn">'+(idx/2+1)+'.</span>':'<span class="mn">'+((idx+1)/2)+'...</span>'}
+function pctHtml(v){
+  var n=v>=0.9995?100:Math.floor(v*100),c=n>=95?'good':(n>=60?'warn':'bad');
+  return '<small class="pc pc-'+c+'">'+n+'%</small>';
+}
+function gapNode(cx,m,n,path){
+  var idx=path.length,tp=TP.push({chId:cx.ch.id,moves:path.concat([m.san]),msg:'Missing move loaded. Play your reply, then save the line.'})-1;
+  return '<div class="chain">'+numHtml(idx)+'<button type="button" class="tn gapmv" data-tp="'+tp+'" title="Played in '+m.n+' of '+n+' games here, and not in your book. Click to load it."><b>'+esc(m.san)+'</b><span class="gapfreq">'+oneIn(m.n,n)+'</span><span class="gapn">'+n+' games</span></button></div>';
+}
+function treeBranches(cx,k0,path,vis){
+  var kids=cx.adj.get(k0),gp=cx.g?cx.g.gapsAt(k0):null;
+  if((!kids||!kids.size)&&(!gp||!gp.list.length))return '';
+  var h='<ul>';
+  if(kids)kids.forEach(function(ck,san){h+='<li>'+treeChain(cx,san,ck,path,vis)+'</li>'});
+  if(gp)gp.list.forEach(function(m){h+='<li>'+gapNode(cx,m,gp.n,path)+'</li>'});
+  return h+'</ul>';
+}
+function delBtn(cx,p,san,leaf){
+  var di=TP.push({chId:cx.ch.id,moves:p,mode:leaf?'leaf':'route'})-1;
+  return '<button type="button" class="tdel" data-del="'+di+'" title="'+(leaf?'Delete this move everywhere it appears':'Remove this move order. The position stays in the book through the other route.')+'" aria-label="Delete '+esc(san)+'">\u00d7</button>';
+}
+function treeChain(cx,san,ck,pre,vis){
+  var ch=cx.ch,h='',p=pre,first=true,tail='',vs=Object.assign({},vis);
+  for(;;){
+    var idx=p.length,own=(idx%2===0)===(ch.color==='w');
+    p=p.concat([san]);
+    var ps=p.join(' '),tp=TP.push({chId:ch.id,moves:p})-1,cv=cx.g?cx.g.comp(ck):null;
+    h+=(idx%2===0?numHtml(idx):(first?numHtml(idx):''))+
+      '<button type="button" class="tn'+(own?' own':'')+(ps===cx.cur?' cur':'')+'" data-tp="'+tp+'"'+(cv!==null?' title="Covers this share of the continuations played at least 1 in '+GP.x+' games"':'')+'>'+esc(san)+(cv!==null?pctHtml(cv):'')+markHtml(cx,ck)+'</button>';
+    first=false;cx.budget--;
+    var nd=cx.N.get(ck),isLink=nd&&nd.path.join(' ')!==ps,kids=cx.adj.get(ck),nk=kids?kids.size:0;
+    if(isLink){
+      var lp=TP.push({chId:nd.chId,moves:nd.path})-1;
+      h+='<button type="button" class="tlink" data-tp="'+lp+'" title="Same position as another route. Everything after it is shared. Click to open the other route.">\u2194 same position as '+esc(fmt(nd.path))+(nd.chId!==ch.id?' ('+esc(nd.chName)+')':'')+'</button>';
+    }
+    if(nk===0)h+=delBtn(cx,p,san,true);
+    else if(cx.ends[ps])h+=delBtn(cx,p,san,false);
+    if(vs[ck]){h+='<span class="note">position repeats</span>';break}
+    vs[ck]=1;
+    if(cx.budget<=0){h+='<span class="note">\u2026 too large to show in full</span>';break}
+    var ng=cx.g?cx.g.gapsAt(ck).list.length:0;
+    if(nk===0&&ng===0)break;
+    if(nk===1&&ng===0&&!isLink){var e=kids.entries().next().value;san=e[0];ck=e[1];continue}
+    tail=treeBranches(cx,ck,p,vs);break;
+  }
+  return '<div class="chain">'+h+'</div>'+tail;
+}
+function renderEdTree(){
+  var ch=edChapter(),out=$('#ed-tree'),info=$('#ed-gapinfo');TP=[];
+  if(!ch){out.innerHTML='<p class="note" style="margin:0">Create a chapter to start your book.</p>';$('#ed-linestitle').textContent='Tree';info.textContent='';return}
+  var adj=chGraph(ch),root=key(new Chess().fen()),ends={},moves=0;
+  ch.lines.forEach(function(l){ends[l.moves.join(' ')]=1});
+  adj.forEach(function(m){moves+=m.size});
+  var want=$('#ed-showgaps').checked,g=want?gapCtxFor(ch):null;
+  var cx={ch:ch,adj:adj,g:g,N:NODES[ch.color],ends:ends,notes:ch.notes||{},shapes:ch.shapes||{},cur:ED.moves.slice(0,ED.ply).join(' '),budget:3000};
+  var rootVis={};rootVis[root]=1;
+  var tr=treeBranches(cx,root,[],rootVis);
+  out.innerHTML=tr||'<p class="note" style="margin:0">No lines saved yet. Play moves on the board and save the line.</p>';
+  $('#ed-linestitle').textContent='Tree ('+ch.lines.length+' line'+(ch.lines.length===1?'':'s')+', '+moves+' moves)';
+  if(!want)info.textContent='';
+  else if(!g)info.textContent='Load games in the Find gaps tab to see missing moves and how complete each line is.';
+  else{
+    var c=g.comp(root),pct=c>=0.9995?100:Math.floor(c*100);
+    info.textContent='Moves played at least 1 in '+GP.x+' games, from '+STAT.used+' games. This chapter is '+pct+'% complete. Dashed red moves are missing from your book. The percentage next to a move is how much of what is commonly played after it your book covers.';
+  }
+}
+function gotoPath(moves,chId,msg){
+  if(chId&&chById(chId))ED.chapterId=chId;
+  ED.moves=moves.slice();ED.ply=moves.length;setMsg('#ed-msg',msg||'',msg?'info':'');renderEditor();
+  if(window.innerWidth<900){var b=$('#board-ed');if(b&&b.scrollIntoView)b.scrollIntoView({block:'nearest'})}
+}
+function pruneBook(ch){
+  var ls=ch.lines.filter(function(l){return l.moves.length});
+  ch.lines=ls.filter(function(a,i){return !ls.some(function(b,j){return j!==i&&b.moves.length>=a.moves.length&&isPrefix(a.moves,b.moves)&&(b.moves.length>a.moves.length||j<i)})});
+  var keys=chKeys(ch);ch.notes=ch.notes||{};ch.shapes=ch.shapes||{};
+  Object.keys(ch.notes).forEach(function(k){if(!keys[k])delete ch.notes[k]});
+  Object.keys(ch.shapes).forEach(function(k){if(!keys[k])delete ch.shapes[k]});
+}
+function delLeaf(ch,path){
+  var ps=path.join(' ');
+  ch.lines.forEach(function(l){if(l.moves.join(' ')===ps)l.moves=l.moves.slice(0,-1)});
+  pruneBook(ch);
+}
+function delLeafPos(ch,path){
+  var q=posKeyOf(path);
+  ch.lines.forEach(function(l){if(posKeyOf(l.moves)===q)l.moves=l.moves.slice(0,-1)});
+  pruneBook(ch);
+}
+$('#ed-tree').addEventListener('click',function(e){
+  var d=e.target.closest('[data-del]');
+  if(d){
+    var t=TP[+d.dataset.del],ch=edChapter();if(!t||!ch)return;
+    armed(d,'Delete?',function(){
+      (t.mode==='leaf'?delLeafPos:delLeaf)(ch,t.moves);commit();
+      var par=t.moves.slice(0,-1);
+      ED.moves=par;ED.ply=par.length;
+      setMsg('#ed-msg','Removed '+moveLabel(t.moves.length-1,t.moves[t.moves.length-1])+' from the tree.','info');
+      renderEditor();
+    });
+    return;
+  }
+  var b=e.target.closest('[data-tp]');if(!b)return;
+  var p=TP[+b.dataset.tp];if(p)gotoPath(p.moves,p.chId,p.msg);
+});
+$('#ed-showgaps').addEventListener('change',renderEdTree);
+$('#ed-note').addEventListener('change',function(e){
+  var ch=edChapter();if(!ch||!ED.noteKey)return;
+  ch.notes=ch.notes||{};
+  var t=e.target.value.trim().slice(0,500);
+  if(t)ch.notes[ED.noteKey]=t;else delete ch.notes[ED.noteKey];
+  commit();renderEdTree();updateBoardNote();
+});
+$('#ed-trans').addEventListener('click',function(e){
+  if(e.target.id==='ed-gotrans'&&ED.trans)openInEditor(ED.trans.path,ED.trans.chId);
+});
+
+/* ---------- PGN export and import ---------- */
+var START_FEN='rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w';
+function cleanComment(t){return String(t).replace(/\[%[^\]]*\]/g,'').replace(/[{}]/g,'').replace(/\s+/g,' ').trim()}
+function bookTrie(ch){
+  var root={kids:new Map()};
+  ch.lines.forEach(function(ln){
+    var node=root,g=new Chess();
+    for(var i=0;i<ln.moves.length;i++){
+      if(!g.move(ln.moves[i]))break;
+      var san=ln.moves[i],c=node.kids.get(san);
+      if(!c){c={san:san,kids:new Map(),key:key(g.fen())};node.kids.set(san,c)}
+      node=c;
+    }
+  });
+  return root;
+}
+function pgnTok(m,ply,force){return (ply%2===0?(ply/2+1)+'. ':(force?((ply+1)/2)+'... ':''))+m.san}
+function pgnComment(m,cx){
+  if(cx.used[m.key])return [];
+  var t=cx.notes[m.key]?cleanComment(cx.notes[m.key]):'',sh=cx.shapes[m.key]||[],parts=[];
+  var csl=sh.filter(function(x){return x.t==='s'}).map(function(x){return x.c.toUpperCase()+x.sq});
+  var cal=sh.filter(function(x){return x.t==='a'}).map(function(x){return x.c.toUpperCase()+x.from+x.to});
+  if(t)parts.push(t);
+  if(csl.length)parts.push('[%csl '+csl.join(',')+']');
+  if(cal.length)parts.push('[%cal '+cal.join(',')+']');
+  if(!parts.length)return [];
+  cx.used[m.key]=1;
+  var w=parts.join(' ').split(' ').filter(Boolean);
+  w[0]='{'+w[0];w[w.length-1]+='}';
+  return w;
+}
+function pgnSeq(kids,ply,force,cx){
+  var list=Array.from(kids.values());
+  if(!list.length)return [];
+  var m=list[0],out=[pgnTok(m,ply,force)],cm=pgnComment(m,cx),hv=list.length>1;
+  if(cm.length){out=out.concat(cm);hv=true}
+  for(var i=1;i<list.length;i++){
+    var v=pgnSeq(new Map([[list[i].san,list[i]]]),ply,true,cx);
+    v[0]='('+v[0];v[v.length-1]+=')';
+    out=out.concat(v);
+  }
+  return out.concat(pgnSeq(m.kids,ply+1,hv,cx));
+}
+function pgnWrap(toks){
+  var lines=[],cur='';
+  toks.forEach(function(t){
+    if(cur&&cur.length+1+t.length>80){lines.push(cur);cur=t}
+    else cur=cur?cur+' '+t:t;
+  });
+  if(cur)lines.push(cur);
+  return lines.join('\n');
+}
+function chapterPGN(ch,date){
+  var cx={notes:ch.notes||{},shapes:ch.shapes||{},used:{}},toks=pgnSeq(bookTrie(ch).kids,0,false,cx);
+  var H=[['Event',ch.name],['Site','?'],['Date',date],['Round','-'],['White',ch.color==='w'?'Opening book':'?'],['Black',ch.color==='b'?'Opening book':'?'],['Result','*'],['Orientation',ch.color==='w'?'white':'black'],['Annotator','Opening Drill']];
+  return H.map(function(p){return '['+p[0]+' "'+String(p[1]).replace(/\\/g,'\\\\').replace(/"/g,'\\"')+'"]'}).join('\n')+'\n\n'+pgnWrap(toks.concat(['*']))+'\n';
+}
+function exportPGN(scope){
+  var d=new Date(),date=d.getFullYear()+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+String(d.getDate()).padStart(2,'0');
+  var chs=scope==='all'?DB.chapters:DB.chapters.filter(function(c){return c.id===scope});
+  return chs.map(function(c){return chapterPGN(c,date)}).join('\n');
+}
+function refreshExport(){
+  var sel=$('#pgn-scope'),cur=sel.value||'all';
+  sel.innerHTML='<option value="all">All chapters ('+DB.chapters.length+')</option>'+DB.chapters.map(function(c){return '<option value="'+esc(c.id)+'">'+esc(c.name)+' ('+(c.color==='w'?'White':'Black')+')</option>'}).join('');
+  sel.value=chById(cur)?cur:'all';
+  $('#pgn-out').value=DB.chapters.length?exportPGN(sel.value):'';
+}
+async function saveText(name,text,msg){
+  if(window.claude&&window.claude.use){
+    var dl=null;try{dl=await window.claude.use('downloads')}catch(e){dl=null}
+    if(!dl){setMsg(msg,'Saving a file is not available here. Use Copy instead.','bad');return}
+    try{await dl.save({filename:name.replace(/\.pgn$/,'.txt'),data:text});setMsg(msg,'Saved. Rename it to .pgn if another tool asks for that.','good')}
+    catch(e){setMsg(msg,e&&e.code==='declined'?'Save cancelled.':'Saving a file is not available here. Use Copy instead.',e&&e.code==='declined'?'info':'bad')}
+    return;
+  }
+  try{
+    var u=URL.createObjectURL(new Blob([text],{type:'application/x-chess-pgn'})),a=document.createElement('a');
+    a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();
+    setTimeout(function(){URL.revokeObjectURL(u)},4000);setMsg(msg,'File saved.','good');
+  }catch(e){setMsg(msg,'Could not save a file here. Use Copy instead.','bad')}
+}
+/* Parser: variations, comments, NAGs. Builds a move tree per game. */
+function parseBookPGN(text){
+  text=String(text).replace(/\r\n?/g,'\n');
+  var n=text.length,i=0,games=[],cur=null,skipped=0,broken=0;
+  var reHdr=/\[\s*(\w+)\s+"((?:[^"\\]|\\.)*)"\s*\]/y,reTok=/[^\s(){}\[\];$]+/y,reNum=/\d+\.+/y;
+  function nodeAt(root,path){var nd=root;for(var k=0;k<path.length&&nd;k++)nd=nd.kids.get(path[k]);return nd}
+  function newGame(){return {h:{},started:false,root:{kids:new Map()},ctx:null,stack:[],notes:{},shapes:{},bad:false}}
+  function finish(){
+    var g=cur;cur=null;
+    if(!g||!g.started)return;
+    if(g.h.FEN&&g.h.FEN.indexOf(START_FEN)!==0){skipped++;return}
+    if(g.bad)broken++;
+    var lines=[];
+    (function walk(node,path){
+      if(!node.kids.size){if(path.length)lines.push(path);return}
+      node.kids.forEach(function(c,san){walk(c,path.concat([san]))});
+    })(g.root,[]);
+    games.push({h:g.h,lines:lines,notes:g.notes,shapes:g.shapes});
+  }
+  function addNote(raw){
+    if(!cur||!cur.started||!cur.ctx||!cur.ctx.lastKey)return;
+    var k=cur.ctx.lastKey,sh=[];
+    String(raw).replace(/\[%(csl|cal)\s+([^\]]*)\]/g,function(_,kind,list){
+      list.split(/[\s,]+/).forEach(function(tk){
+        var mm=/^([GRBY])([a-h][1-8])([a-h][1-8])?$/i.exec(tk);if(!mm)return;
+        var col=mm[1].toLowerCase();
+        if(kind==='csl'&&!mm[3])sh.push({t:'s',sq:mm[2],c:col});
+        else if(kind==='cal'&&mm[3]&&mm[3]!==mm[2])sh.push({t:'a',from:mm[2],to:mm[3],c:col});
+      });
+      return '';
+    });
+    if(sh.length)cur.shapes[k]=cleanShapes((cur.shapes[k]||[]).concat(sh));
+    var t=cleanComment(raw);if(!t)return;
+    var old=cur.notes[k];
+    if(!old)cur.notes[k]=t;else if(old.indexOf(t)<0)cur.notes[k]=old+' / '+t;
+  }
+  function startVar(p){
+    if(!p.path.length)return {dead:true,path:[],node:p.node,parent:null,g:new Chess(),lastKey:null};
+    var np=p.path.slice(0,-1),g=new Chess();
+    for(var k=0;k<np.length;k++)g.move(np[k]);
+    return {dead:!!p.dead,path:np,node:p.parent,parent:np.length?nodeAt(cur.root,np.slice(0,-1)):null,g:g,lastKey:null};
+  }
+  while(i<n){
+    var c=text.charAt(i),j;
+    if(c===' '||c==='\n'||c==='\t'){i++;continue}
+    if(c==='['){
+      reHdr.lastIndex=i;var m=reHdr.exec(text);
+      if(m){
+        if(!cur||cur.started){finish();cur=newGame()}
+        cur.h[m[1]]=m[2].replace(/\\(.)/g,'$1');i=reHdr.lastIndex;continue;
+      }
+      i++;continue;
+    }
+    if(c==='{'){j=text.indexOf('}',i+1);if(j<0)j=n;addNote(text.slice(i+1,j));i=j+1;continue}
+    if(c===';'){j=text.indexOf('\n',i);if(j<0)j=n;addNote(text.slice(i+1,j));i=j+1;continue}
+    if(c==='('){if(cur&&cur.started&&cur.ctx){cur.stack.push(cur.ctx);cur.ctx=startVar(cur.ctx)}i++;continue}
+    if(c===')'){if(cur&&cur.stack.length)cur.ctx=cur.stack.pop();i++;continue}
+    if(c==='$'){i++;while(i<n&&/\d/.test(text.charAt(i)))i++;continue}
+    reNum.lastIndex=i;
+    if(reNum.test(text)){i=reNum.lastIndex;continue}
+    reTok.lastIndex=i;var t=reTok.exec(text);
+    if(!t){i++;continue}
+    i=reTok.lastIndex;
+    var tok=t[0];
+    if(/^(1-0|0-1|1\/2-1\/2|\*)$/.test(tok)){if(cur&&cur.started&&!cur.stack.length)finish();continue}
+    if(!cur)cur=newGame();
+    if(!cur.started){cur.started=true;cur.ctx={path:[],node:cur.root,parent:null,g:new Chess(),lastKey:null,dead:false}}
+    var ctx=cur.ctx;if(ctx.dead)continue;
+    tok=tok.replace(/[!?]+$/,'');
+    var mv=ctx.g.move(tok,{sloppy:true});
+    if(!mv){ctx.dead=true;cur.bad=true;continue}
+    var child=ctx.node.kids.get(mv.san);
+    if(!child){child={kids:new Map()};ctx.node.kids.set(mv.san,child)}
+    ctx.parent=ctx.node;ctx.node=child;ctx.path.push(mv.san);ctx.lastKey=key(ctx.g.fen());
+  }
+  finish();
+  return {games:games,skipped:skipped,broken:broken};
+}
+function registerNodes(ch,moves){
+  var N=NODES[ch.color];
+  if(!N.size)N.set(key(new Chess().fen()),{path:[],chId:ch.id,chName:ch.name});
+  var g=new Chess();
+  for(var i=0;i<moves.length;i++){
+    if(!g.move(moves[i]))break;
+    var k=key(g.fen());
+    if(!N.has(k))N.set(k,{path:moves.slice(0,i+1),chId:ch.id,chName:ch.name});
+  }
+}
+function importBook(text,defColor){
+  var res=parseBookPGN(text);
+  var usable=res.games.filter(function(g){return g.lines.length});
+  if(!usable.length)return {err:'No readable moves found in that text.'};
+  buildNodes();
+  var touched={},newCh=0,lines=0,notes=0,rerouted=0,lastCh=null,adjs={};
+  usable.forEach(function(gm,gi){
+    var h=gm.h,ori=String(h.Orientation||'').toLowerCase(),color=ori==='black'?'b':(ori==='white'?'w':defColor);
+    var name=String(h.ChapterName||h.Event||'').trim().slice(0,80);
+    if(!name||name==='?')name='Imported '+(gi+1);
+    var ch=DB.chapters.filter(function(c){return c.name===name&&c.color===color})[0];
+    if(!ch){ch={id:uid(),name:name,color:color,lines:[],notes:{},shapes:{}};DB.chapters.push(ch);newCh++}
+    ch.notes=ch.notes||{};touched[ch.id]=1;lastCh=ch;
+    var adj=adjs[ch.id]||(adjs[ch.id]=chGraph(ch));
+    gm.lines.forEach(function(mv){
+      if(coveredBy(adj,mv))return;
+      var r=addLine(ch,mv);
+      if(r==='added'||r==='extended'){lines++;registerNodes(ch,addLine.final);addEdges(adj,addLine.final)}
+    });
+    var keys=chKeys(ch);
+    Object.keys(gm.notes).forEach(function(k){
+      if(!keys[k])return;
+      var t=gm.notes[k].slice(0,500),old=ch.notes[k];
+      if(!old){ch.notes[k]=t;notes++}
+      else if(old.indexOf(t)<0){ch.notes[k]=(old+' / '+t).slice(0,500);notes++}
+    });
+    ch.shapes=ch.shapes||{};
+    Object.keys(gm.shapes||{}).forEach(function(k){
+      if(!keys[k])return;
+      var a=cleanShapes((ch.shapes[k]||[]).concat(gm.shapes[k]));
+      if(a.length)ch.shapes[k]=a;
+    });
+  });
+  commit();
+  if(lastCh){ED.chapterId=lastCh.id;ED.moves=[];ED.ply=0}
+  return {chapters:Object.keys(touched).length,newCh:newCh,lines:lines,notes:notes,rerouted:rerouted,skipped:res.skipped,broken:res.broken};
+}
+$('#pgn-scope').addEventListener('change',function(){$('#pgn-out').value=exportPGN($('#pgn-scope').value)});
+$('#pgn-copy').addEventListener('click',function(){
+  var t=$('#pgn-out');if(!t.value){setMsg('#pgn-outmsg','Your book is empty.','info');return}
+  t.select();
+  var done=function(ok){setMsg('#pgn-outmsg',ok?'Copied.':'Press Ctrl+C (or Cmd+C) to copy the selected text.',ok?'good':'info')};
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t.value).then(function(){done(true)},function(){done(false)});else done(false);
+});
+$('#pgn-save').addEventListener('click',function(){
+  var t=$('#pgn-out').value;if(!t){setMsg('#pgn-outmsg','Your book is empty.','info');return}
+  var sc=$('#pgn-scope').value,ch=chById(sc),nm=(ch?ch.name:'opening-book').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'opening-book';
+  saveText(nm+'.pgn',t,'#pgn-outmsg');
+});
+$('#pgn-file').addEventListener('change',function(e){
+  var f=e.target.files&&e.target.files[0];if(!f)return;
+  var rd=new FileReader();rd.onload=function(){$('#pgn-in').value=String(rd.result);setMsg('#pgn-inmsg','File loaded. Press Import.','info')};rd.readAsText(f);
+});
+$('#pgn-import').addEventListener('click',function(){
+  var txt=$('#pgn-in').value;
+  if(!txt.trim()){setMsg('#pgn-inmsg','Paste a PGN or choose a file first.','bad');return}
+  if(txt.length>5000000){setMsg('#pgn-inmsg','That file is too large (limit 5 MB).','bad');return}
+  var def=document.querySelector('input[name=impcolor]:checked').value;
+  var r=importBook(txt,def);
+  if(r.err){setMsg('#pgn-inmsg',r.err,'bad');return}
+  var m='Imported '+r.lines+' line'+(r.lines===1?'':'s')+' into '+r.chapters+' chapter'+(r.chapters===1?'':'s')+' ('+r.newCh+' new) with '+r.notes+' note'+(r.notes===1?'':'s')+'.';
+  if(r.rerouted)m+=' '+r.rerouted+' line'+(r.rerouted===1?' reached':'s reached')+' a position already in the book, so the rest continues from the first line.';
+  if(r.skipped)m+=' '+r.skipped+' game'+(r.skipped===1?'':'s')+' skipped (custom start position).';
+  if(r.broken)m+=' '+r.broken+' game'+(r.broken===1?' has':'s have')+' moves that could not be read; those were left out.';
+  setMsg('#pgn-inmsg',m,'good');
+  $('#pgn-in').value='';refreshExport();renderEditor();
+});
+
+/* ---------- hover preview on the big board ---------- */
+var PREV=false;
+function edOrient(){return ED.flip?(edColor()==='w'?'b':'w'):edColor()}
+function noteFor(moves,chId){
+  var ch=chById(chId||ED.chapterId);if(!ch||!moves.length)return null;
+  var k=posKeyOf(moves);if(!k)return null;
+  var t=(ch.notes||{})[k]||'',sh=(ch.shapes||{})[k]||[];
+  return (t||sh.length)?{label:moveLabel(moves.length-1,moves[moves.length-1]),text:t,shapes:sh}:null;
+}
+function showBoardNote(n){
+  var el=$('#ed-boardnote'),show=!!(n&&n.text);el.hidden=!show;
+  el.innerHTML=show?'<b>Note for '+esc(n.label)+'</b> '+esc(n.text):'';
+  drawShapes(n?n.shapes:[]);
+}
+function updateBoardNote(){showBoardNote(noteFor(ED.moves.slice(0,ED.ply)))}
+function clearPreviewUI(){PREV=false;$('#board-ed').classList.remove('previewing');$('#ed-preview').hidden=true}
+var previewChId=null;
+function previewPath(moves){
+  var g=new Chess();
+  for(var i=0;i<moves.length;i++){if(!g.move(moves[i]))return}
+  var hist=g.history({verbose:true}),lm=hist.length?hist[hist.length-1]:null;
+  edBoard.set({game:g,orientation:edOrient(),last:lm?[lm.from,lm.to]:null,interactive:false});
+  PREV=true;$('#board-ed').classList.add('previewing');
+  showBoardNote(noteFor(moves,previewChId));
+  var pv=$('#ed-preview');pv.hidden=false;
+  pv.textContent=moves.length?'Preview after '+moveLabel(moves.length-1,moves[moves.length-1])+'. Click the move to keep it.':'Preview of the starting position.';
+}
+function endPreview(){
+  if(!PREV)return;
+  var g=edGame(),hist=g.history({verbose:true}),lm=hist.length?hist[hist.length-1]:null;
+  edBoard.set({game:g,orientation:edOrient(),last:lm?[lm.from,lm.to]:null,interactive:true});
+  clearPreviewUI();
+  updateBoardNote();
+}
+function hoverFrom(e){
+  var b=e.target.closest&&e.target.closest('[data-tp],[data-ply]');
+  if(!b){endPreview();return}
+  if(b.dataset.tp!==undefined){var t=TP[+b.dataset.tp];if(t){previewChId=t.chId;previewPath(t.moves)}}
+  else{previewChId=null;previewPath(ED.moves.slice(0,+b.dataset.ply))}
+}
+['#ed-tree','#ed-moves'].forEach(function(sel){
+  var el=$(sel);
+  el.addEventListener('mouseover',hoverFrom);
+  el.addEventListener('focusin',hoverFrom);
+  el.addEventListener('mouseleave',endPreview);
+  el.addEventListener('focusout',endPreview);
+});
+
+/* ---------- arrows and squares drawn on the board ---------- */
+var SHAPE_COL={g:'#2ea35a',r:'#d64034',b:'#2d6edc',y:'#e6aa14'};
+function cleanShapes(arr){
+  var out=[],seen={};
+  (Array.isArray(arr)?arr:[]).forEach(function(o){
+    if(!o||!/^[grby]$/.test(o.c))return;
+    var sqRe=/^[a-h][1-8]$/,k;
+    if(o.t==='s'&&sqRe.test(o.sq)){k='s'+o.sq;if(!seen[k]&&out.length<30){seen[k]=1;out.push({t:'s',sq:o.sq,c:o.c})}}
+    else if(o.t==='a'&&sqRe.test(o.from)&&sqRe.test(o.to)&&o.from!==o.to){k='a'+o.from+o.to;if(!seen[k]&&out.length<30){seen[k]=1;out.push({t:'a',from:o.from,to:o.to,c:o.c})}}
+  });
+  return out;
+}
+var shapeLayer=document.createElementNS('http://www.w3.org/2000/svg','svg');
+shapeLayer.setAttribute('viewBox','0 0 8 8');shapeLayer.setAttribute('class','shapes');shapeLayer.setAttribute('aria-hidden','true');
+$('#board-ed').appendChild(shapeLayer);
+function sqXY(sq){
+  var o=edBoard.state?edBoard.state.orientation:'w',f='abcdefgh'.indexOf(sq.charAt(0)),r=+sq.charAt(1)-1;
+  return {x:(o==='w'?f:7-f)+0.5,y:(o==='w'?7-r:r)+0.5};
+}
+function drawShapes(list){
+  var h='';
+  (list||[]).forEach(function(s){
+    var col=SHAPE_COL[s.c]||SHAPE_COL.g;
+    if(s.t==='s'){
+      var p=sqXY(s.sq);
+      h+='<rect x="'+(p.x-0.5)+'" y="'+(p.y-0.5)+'" width="1" height="1" fill="'+col+'" fill-opacity="0.42"/>'+
+         '<rect x="'+(p.x-0.46)+'" y="'+(p.y-0.46)+'" width="0.92" height="0.92" fill="none" stroke="'+col+'" stroke-width="0.07" stroke-opacity="0.85"/>';
+    }else{
+      var a=sqXY(s.from),b=sqXY(s.to),dx=b.x-a.x,dy=b.y-a.y,len=Math.sqrt(dx*dx+dy*dy)||1,ux=dx/len,uy=dy/len,hd=0.42,bx=b.x-ux*hd,by=b.y-uy*hd,px=-uy,py=ux;
+      h+='<line x1="'+(a.x+ux*0.2)+'" y1="'+(a.y+uy*0.2)+'" x2="'+bx+'" y2="'+by+'" stroke="'+col+'" stroke-width="0.17" stroke-linecap="round" stroke-opacity="0.85"/>'+
+         '<polygon points="'+b.x+','+b.y+' '+(bx+px*0.24)+','+(by+py*0.24)+' '+(bx-px*0.24)+','+(by-py*0.24)+'" fill="'+col+'" fill-opacity="0.85"/>';
+    }
+  });
+  shapeLayer.innerHTML=h;
+}
+function markHtml(cx,k){
+  var hasT=!!cx.notes[k],hasS=!!(cx.shapes[k]&&cx.shapes[k].length);
+  if(!hasT&&!hasS)return '';
+  return '<span class="nmark'+(hasT?'':' ring')+'" title="'+(hasT?'Has a note':'Has arrows or squares')+'"></span>';
+}
+function updateClearBtn(){
+  var ch=edChapter(),b=$('#ed-clearshapes');
+  b.hidden=!(ch&&ED.noteKey&&ch.shapes&&ch.shapes[ED.noteKey]&&ch.shapes[ED.noteKey].length);
+}
+function toggleShape(sh){
+  var ch=edChapter(),k=ED.noteKey;
+  if(!ch||!k){setMsg('#ed-msg','Save the line first, then you can draw on its positions.','info');return}
+  ch.shapes=ch.shapes||{};
+  var arr=(ch.shapes[k]||[]).slice();
+  var i=arr.findIndex(function(o){return o.t===sh.t&&o.sq===sh.sq&&o.from===sh.from&&o.to===sh.to});
+  if(i>=0){if(arr[i].c===sh.c)arr.splice(i,1);else arr[i]={t:arr[i].t,sq:arr[i].sq,from:arr[i].from,to:arr[i].to,c:sh.c}}
+  else arr.push(sh);
+  arr=cleanShapes(arr);
+  if(arr.length)ch.shapes[k]=arr;else delete ch.shapes[k];
+  commit();renderEdTree();updateBoardNote();updateClearBtn();
+}
+var DR=null;
+function sqAt(e){var t=document.elementFromPoint(e.clientX,e.clientY),c=t&&t.closest?t.closest('#board-ed .sq'):null;return c?c.dataset.sq:null}
+(function(){
+  var bd=$('#board-ed');
+  bd.addEventListener('contextmenu',function(e){e.preventDefault()});
+  bd.addEventListener('pointerdown',function(e){
+    if(e.button!==2||PREV)return;
+    var sq=sqAt(e);if(!sq)return;
+    e.preventDefault();
+    DR={from:sq,to:sq,c:e.shiftKey?'r':((e.ctrlKey||e.metaKey)?'b':(e.altKey?'y':'g'))};
+    try{bd.setPointerCapture(e.pointerId)}catch(_){}
+  });
+  bd.addEventListener('pointermove',function(e){
+    if(!DR)return;
+    var sq=sqAt(e);if(!sq||sq===DR.to)return;
+    DR.to=sq;
+    var n=noteFor(ED.moves.slice(0,ED.ply)),list=(n?n.shapes:[]).slice();
+    list.push(DR.to===DR.from?{t:'s',sq:DR.from,c:DR.c}:{t:'a',from:DR.from,to:DR.to,c:DR.c});
+    drawShapes(list);
+  });
+  bd.addEventListener('pointerup',function(e){
+    if(!DR||e.button!==2)return;
+    var d=DR;DR=null;
+    var to=sqAt(e)||d.to;
+    toggleShape(to===d.from?{t:'s',sq:d.from,c:d.c}:{t:'a',from:d.from,to:to,c:d.c});
+  });
+  bd.addEventListener('pointercancel',function(){if(DR){DR=null;updateBoardNote()}});
+})();
+$('#ed-clearshapes').addEventListener('click',function(){
+  var ch=edChapter();if(!ch||!ED.noteKey||!ch.shapes)return;
+  delete ch.shapes[ED.noteKey];
+  commit();renderEdTree();updateBoardNote();updateClearBtn();
+});
+
+/* ---------- views, backup ---------- */
+function showView(v){
+  ['book','train','games','gaps'].forEach(function(n){$('#view-'+n).hidden=(n!==v)});
+  $$('.tab').forEach(function(t){t.setAttribute('aria-selected',String(t.dataset.view===v))});
+  if(v==='book') renderEditor();
+  if(v==='train') renderTrainSetup();
+  if(v==='games'||v==='gaps'){var pn=$('#gm-panel');if(v==='gaps')$('#gp-slot').appendChild(pn);else $('#view-games .gamewrap').insertBefore(pn,$('#gm-out'))}
+  if(v==='games') renderGames();
+  if(v==='gaps') renderGaps();
+}
+$$('.tab').forEach(function(t){t.addEventListener('click',function(){showView(t.dataset.view)})});
+
+$('#btn-backup').addEventListener('click',function(){
+  $('#bk-out').value=JSON.stringify(DB);$('#bk-in').value='';
+  setMsg('#bk-copymsg','');setMsg('#bk-restoremsg','');setMsg('#pgn-outmsg','');setMsg('#pgn-inmsg','');refreshExport();$('#backup').hidden=false;$('#bk-close').focus();
+});
+$('#bk-close').addEventListener('click',function(){$('#backup').hidden=true});
+$('#backup').addEventListener('click',function(e){if(e.target.id==='backup')$('#backup').hidden=true});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')$('#backup').hidden=true});
+$('#bk-copy').addEventListener('click',function(){
+  var t=$('#bk-out');t.select();
+  var done=function(ok){setMsg('#bk-copymsg',ok?'Copied.':'Press Ctrl+C (or Cmd+C) to copy the selected text.',ok?'good':'info')};
+  if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(t.value).then(function(){done(true)},function(){done(false)});
+  else done(false);
+});
+$('#bk-restore').addEventListener('click',function(){
+  var d=null;try{d=sanitize(JSON.parse($('#bk-in').value))}catch(e){d=null}
+  if(!d||!d.chapters.length){setMsg('#bk-restoremsg','That does not look like a backup from this app.','bad');return}
+  DB=d;ED.chapterId=DB.chapters[0].id;ED.moves=[];ED.ply=0;commit();
+  $('#gm-user').value=DB.settings.user;$('#gm-months').value=String(DB.settings.months);
+  setMsg('#bk-restoremsg','Restored '+DB.chapters.length+' chapters.','good');renderEditor();
+});
+
+/* ---------- start ---------- */
+rebuild();save();renderEditor();
+})();
+</script>
+
+</body></html>
